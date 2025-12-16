@@ -1,92 +1,179 @@
 # Streamly – Plan schematu bazy danych (PostgreSQL / Supabase)
 
-## 1. Tabele i kolumny
+## 1. Konfiguracja wstępna i rozszerzenia
 
-### 1.1. `profiles`
-| Kolumna            | Typ danych          | Ograniczenia                                    |
-|--------------------|---------------------|-------------------------------------------------|
-| `user_id`          | `uuid`              | PK, FK → `auth.users(id)` ON DELETE CASCADE     |
-| `onboarding_step`  | `smallint`          | `NOT NULL` DEFAULT `0`                          |
-| `created_at`       | `timestamptz`       | `NOT NULL` DEFAULT `now()`                      |
-| `updated_at`       | `timestamptz`       | `NOT NULL` DEFAULT `now()`                      |
+Dla zapewnienia unikalnych identyfikatorów oraz wydajnego wyszukiwania tekstowego.
 
-### 1.2. `platforms`
-| Kolumna       | Typ danych    | Ograniczenia                                       |
-|---------------|---------------|----------------------------------------------------|
-| `id`          | `uuid`        | PK DEFAULT `gen_random_uuid()`                     |
-| `name`        | `text`        | `NOT NULL`                                         |
-| `slug`        | `text`        | `NOT NULL`, `UNIQUE`                               |
-| `logo_url`    | `text`        |                                                    |
-| `created_at`  | `timestamptz` | `NOT NULL` DEFAULT `now()`                         |
-| `updated_at`  | `timestamptz` | `NOT NULL` DEFAULT `now()`                         |
+```sql
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp"; -- Lub pgcrypto (standard w Supabase)
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";   -- Dla wyszukiwania fuzzy (trigramy)
+```
 
-### 1.3. `user_platforms` (łącznik M:N)
-| Kolumna       | Typ danych | Ograniczenia                                                   |
-|---------------|-----------|----------------------------------------------------------------|
-| `id`          | `uuid`    | PK DEFAULT `gen_random_uuid()`                                 |
-| `user_id`     | `uuid`    | FK → `auth.users(id)` ON DELETE CASCADE, `NOT NULL`             |
-| `platform_id` | `uuid`    | FK → `platforms(id)` ON DELETE CASCADE, `NOT NULL`             |
-| `created_at`  | `timestamptz` | `NOT NULL` DEFAULT `now()`                                 |
-| `UNIQUE`      | `(user_id, platform_id)` | Zapobiega duplikatom                              |
+## 2. Typy danych (ENUM)
 
-### 1.4. Typ ENUM `creator_role`
-`'actor' | 'director'`
+Definicja typów wyliczeniowych w celu zapewnienia spójności danych i łatwiejszej walidacji.
 
-### 1.5. `creators`
-| Kolumna           | Typ danych    | Ograniczenia                                                   |
-|-------------------|--------------|----------------------------------------------------------------|
-| `id`              | `uuid`       | PK DEFAULT `gen_random_uuid()`                                 |
-| `external_api_id` | `text`       | `NOT NULL`                                                     |
-| `name`            | `text`       | `NOT NULL`                                                     |
-| `creator_role`    | `creator_role` | `NOT NULL`                                                   |
-| `avatar_url`      | `text`       |                                                                |
-| `created_at`      | `timestamptz` | `NOT NULL` DEFAULT `now()`                                    |
-| `updated_at`      | `timestamptz` | `NOT NULL` DEFAULT `now()`                                    |
-| `UNIQUE`          | `(external_api_id, creator_role)` |                                         |
+```sql
+CREATE TYPE creator_role AS ENUM ('actor', 'director');
+CREATE TYPE media_type AS ENUM ('movie', 'series');
+CREATE TYPE onboarding_status AS ENUM ('not_started', 'platforms_selected', 'completed');
+```
 
-### 1.6. `user_creators` (łącznik M:N)
-| Kolumna       | Typ danych | Ograniczenia                                                   |
-|---------------|-----------|----------------------------------------------------------------|
-| `id`          | `uuid`    | PK DEFAULT `gen_random_uuid()`                                 |
-| `user_id`     | `uuid`    | FK → `auth.users(id)` ON DELETE CASCADE, `NOT NULL`             |
-| `creator_id`  | `uuid`    | FK → `creators(id)` ON DELETE CASCADE, `NOT NULL`               |
-| `created_at`  | `timestamptz` | `NOT NULL` DEFAULT `now()`                                 |
-| `UNIQUE`      | `(user_id, creator_id)` |                                                     |
+## 3 Tabele i kolumny
 
-### 1.7. Typ ENUM `media_type`
-`'movie' | 'series'`
+### 3.1. `profiles`
 
-### 1.8. `watched_items`
-| Kolumna            | Typ danych      | Ograniczenia                                                   |
-|--------------------|-----------------|----------------------------------------------------------------|
-| `id`               | `uuid`          | PK DEFAULT `gen_random_uuid()`                                 |
-| `user_id`          | `uuid`          | FK → `auth.users(id)` ON DELETE CASCADE, `NOT NULL`            |
-| `external_movie_id`| `text`          | `NOT NULL`                                                     |
-| `media_type`       | `media_type`    | `NOT NULL`                                                     |
-| `title`            | `text`          | `NOT NULL`                                                     |
-| `year`             | `integer`       |                                                                |
-| `created_at`       | `timestamptz`   | `NOT NULL` DEFAULT `now()`                                     |
-| `UNIQUE`           | `(user_id, external_movie_id, media_type)` | Unikalność pozycji           |
+Rozszerzenie tabeli `auth.users`. Przechowuje stan onboardingu i ustawienia regionalne.
 
-## 2. Relacje między tabelami
-* `auth.users 1 ── 1 profiles` (klucz wspólny `user_id`).
-* `auth.users 1 ── N user_platforms` → `platforms` (M:N przez `user_platforms`).
-* `auth.users 1 ── N user_creators` → `creators` (M:N przez `user_creators`).
-* `auth.users 1 ── N watched_items`.
+| Kolumna             | Typ danych          | Ograniczenia                                    | Opis |
+|---------------------|---------------------|-------------------------------------------------|------|
+| `user_id`           | `uuid`              | PK, FK → `auth.users(id)` ON DELETE CASCADE     | Powiązanie 1:1 z użytkownikiem Supabase |
+| `country_code`      | `char(2)`           | `NOT NULL` DEFAULT `'PL'`                       | Kod kraju dla API (np. dostępność VOD) |
+| `onboarding_status` | `onboarding_status` | `NOT NULL` DEFAULT `'not_started'`              | Status procesu wdrożenia |
+| `created_at`        | `timestamptz`       | `NOT NULL` DEFAULT `now()`                      | Data utworzenia |
+| `updated_at`        | `timestamptz`       | `NOT NULL` DEFAULT `now()`                      | Data ostatniej aktualizacji |
 
-## 3. Indeksy
-| Tabela          | Indeks                                    | Cel                                                         |
-|-----------------|--------------------------------------------|-------------------------------------------------------------|
-| `creators`      | `btree(name)` / `gin (name gin_trgm_ops)`  | Szybkie wyszukiwanie po nazwie                              |
-| `watched_items` | `btree(user_id, media_type)`              | Filtrowanie listy rekomendacji                              |
-| `user_platforms`| `btree(user_id)`                          | Pobieranie platform użytkownika                             |
-| `user_creators` | `btree(user_id)`                          | Pobieranie twórców użytkownika                              |
+### 3.2. `platforms`
 
-Unikalne indeksy zostały zdefiniowane w sekcjach tabel.
+Słownik statyczny platform VOD. Zarządzany przez administratorów/system.
 
-## 4. Zasady PostgreSQL (RLS, funkcje, triggery)
+| Kolumna                | Typ danych    | Ograniczenia                                       | Opis |
+|------------------------|---------------|----------------------------------------------------|------|
+| `id`                   | `uuid`        | PK DEFAULT `gen_random_uuid()`                     | Unikalne ID platformy |
+| `name`                 | `text`        | `NOT NULL`                                         | Nazwa wyświetlana (np. Netflix) |
+| `slug`                 | `text`        | `NOT NULL`, `UNIQUE`                               | URL-friendly ID |
+| `external_provider_id` | `text`        | `NOT NULL`                                         | ID dostawcy w zewn. API (np. TMDB ID) |
+| `logo_url`             | `text`        |                                                    | Ścieżka do logotypu |
+| `created_at`           | `timestamptz` | `NOT NULL` DEFAULT `now()`                         | |
+| `updated_at`           | `timestamptz` | `NOT NULL` DEFAULT `now()`                         | |
 
-### 4.1. Funkcje pomocnicze
+### 3.3. `user_platforms`
+
+Tabela łącząca (M:N) użytkowników z ich subskrypcjami.
+
+| Kolumna       | Typ danych    | Ograniczenia                                                   |
+|---------------|---------------|----------------------------------------------------------------|
+| `id`          | `uuid`        | PK DEFAULT `gen_random_uuid()`                                 |
+| `user_id`     | `uuid`        | FK → `auth.users(id)` ON DELETE CASCADE, `NOT NULL`             |
+| `platform_id` | `uuid`        | FK → `platforms(id)` ON DELETE CASCADE, `NOT NULL`             |
+| `created_at`  | `timestamptz` | `NOT NULL` DEFAULT `now()`                                     |
+| `UNIQUE`      | `(user_id, platform_id)` | Zapobiega duplikatom subskrypcji dla użytkownika |
+
+### 3.4. `creators`
+
+Globalny słownik twórców. Dane są współdzielone między użytkownikami i cache'owane z zewnętrznego API.
+
+| Kolumna           | Typ danych     | Ograniczenia                                                   | Opis |
+|-------------------|----------------|----------------------------------------------------------------|------|
+| `id`              | `uuid`         | PK DEFAULT `gen_random_uuid()`                                 | Wewnętrzne ID |
+| `external_api_id` | `text`         | `NOT NULL`                                                     | ID z zewnętrznego API (np. TMDB Person ID) |
+| `name`            | `text`         | `NOT NULL`                                                     | Imię i nazwisko |
+| `creator_role`    | `creator_role` | `NOT NULL`                                                     | Rola (aktor/reżyser) |
+| `avatar_url`      | `text`         |                                                                | Zdjęcie profilowe |
+| `meta_data`       | `jsonb`        | DEFAULT '{}'::jsonb                                            | Cache dodatkowych danych |
+| `last_synced_at`  | `timestamptz`  | `NOT NULL` DEFAULT `now()`                                     | Data ostatniej synchronizacji z API |
+| `created_at`      | `timestamptz`  | `NOT NULL` DEFAULT `now()`                                     | |
+| `updated_at`      | `timestamptz`  | `NOT NULL` DEFAULT `now()`                                     | |
+| `UNIQUE`          | `(external_api_id, creator_role)` || Unikalność pary ID + Rola |
+| `CHECK`           | `jsonb_typeof(meta_data) = 'object'` || Walidacja typu JSON |
+
+### 3.5. `user_creators`
+
+Tabela łącząca (M:N) użytkowników z ulubionymi twórcami.
+
+| Kolumna       | Typ danych    | Ograniczenia                                                   |
+|---------------|---------------|----------------------------------------------------------------|
+| `id`          | `uuid`        | PK DEFAULT `gen_random_uuid()`                                 |
+| `user_id`     | `uuid`        | FK → `auth.users(id)` ON DELETE CASCADE, `NOT NULL`             |
+| `creator_id`  | `uuid`        | FK → `creators(id)` ON DELETE CASCADE, `NOT NULL`               |
+| `created_at`  | `timestamptz` | `NOT NULL` DEFAULT `now()`                                     |
+| `UNIQUE`      | `(user_id, creator_id)` | Zapobiega duplikowaniu twórcy u użytkownika |
+
+### 3.6. `watched_items`
+
+Historia obejrzanych produkcji. Służy do wykluczania z rekomendacji i wyświetlania w profilu.
+
+| Kolumna             | Typ danych    | Ograniczenia                                                   | Opis |
+|---------------------|---------------|----------------------------------------------------------------|------|
+| `id`                | `uuid`        | PK DEFAULT `gen_random_uuid()`                                 | |
+| `user_id`           | `uuid`        | FK → `auth.users(id)` ON DELETE CASCADE, `NOT NULL`            | |
+| `external_movie_id` | `text`        | `NOT NULL`                                                     | ID filmu/serialu z zewn. API |
+| `media_type`        | `media_type`  | `NOT NULL`                                                     | Film lub Serial |
+| `title`             | `text`        | `NOT NULL`                                                     | Tytuł (zdenormalizowany dla sortowania) |
+| `year`              | `integer`     |                                                                | Rok produkcji |
+| `meta_data`         | `jsonb`       | DEFAULT '{}'::jsonb                                            | Cache: `poster_path`, `overview` itp. |
+| `created_at`        | `timestamptz` | `NOT NULL` DEFAULT `now()`                                     | Data oznaczenia jako obejrzane |
+| `UNIQUE`            | `(user_id, external_movie_id, media_type)` || Unikalność w historii użytkownika |
+| `CHECK`             | `meta_data ? 'poster_path'` || Wymagane klucze w JSON (przykład) |
+
+## 4. Relacje między tabelami
+
+1. **Użytkownicy (`auth.users`)**:
+
+      * 1:1 z `profiles` (Klucz obcy `user_id`).
+      * 1:N z `user_platforms`.
+      * 1:N z `user_creators`.
+      * 1:N z `watched_items`.
+
+2. **Platformy (`platforms`)**:
+
+      * 1:N z `user_platforms` (Relacja M:N z użytkownikami).
+
+3. **Twórcy (`creators`)**:
+
+      * 1:N z `user_creators` (Relacja M:N z użytkownikami).
+
+## 5. Indeksy
+
+| Tabela           | Kolumny / Typ indeksu                      | Cel optymalizacji                                   |
+|------------------|--------------------------------------------|-----------------------------------------------------|
+| `creators`       | `name gin_trgm_ops` (GIN)                  | Autocomplete i szybkie wyszukiwanie twórców po nazwie (LIKE/ILIKE) |
+| `creators`       | `external_api_id`                          | Szybkie sprawdzanie istnienia twórcy przy imporcie  |
+| `watched_items`  | `(user_id, created_at DESC)`               | Wydajne pobieranie posortowanej historii (US-008)   |
+| `watched_items`  | `(user_id, external_movie_id)`             | Szybkie filtrowanie rekomendacji ("czy obejrzane?") |
+| `user_platforms` | `user_id`                                  | Pobieranie subskrypcji użytkownika przy logowaniu   |
+| `user_creators`  | `user_id`                                  | Pobieranie twórców użytkownika dla algorytmu rekomendacji |
+
+## 6. Zasady PostgreSQL (RLS i Funkcje)
+
+### 6.1. Row Level Security (RLS)
+
+Włączamy RLS dla wszystkich tabel w schemacie `public`.
+
+```sql
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE platforms ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_platforms ENABLE ROW LEVEL SECURITY;
+ALTER TABLE creators ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_creators ENABLE ROW LEVEL SECURITY;
+ALTER TABLE watched_items ENABLE ROW LEVEL SECURITY;
+```
+
+**Polityki (Policies):**
+
+1. **`profiles`**:
+
+      * `SELECT, UPDATE, DELETE`: `auth.uid() = user_id` (Właściciel).
+      * `INSERT`: Wyzwalany przez trigger systemowy (Security Definer).
+
+2. **`platforms`**:
+
+      * `SELECT`: `true` (Publiczny dostęp dla zalogowanych).
+      * `INSERT/UPDATE/DELETE`: Tylko rola `service_role` (Admin).
+
+3. **`creators`**:
+
+      * `SELECT`: `true` (Współdzielony słownik dla wszystkich).
+      * `INSERT/UPDATE`: Tylko rola `service_role`. (Aplikacja/Edge Function pobiera dane z API i zapisuje je w trybie administracyjnym, użytkownik tylko linkuje ID w `user_creators`).
+
+4. **`user_platforms`, `user_creators`, `watched_items`**:
+
+      * `ALL (SELECT, INSERT, UPDATE, DELETE)`: `auth.uid() = user_id`.
+
+### 6.2. Funkcje i Triggery
+
+**Automatyczna aktualizacja `updated_at`**:
+
 ```sql
 CREATE OR REPLACE FUNCTION handle_updated_at()
 RETURNS TRIGGER AS $$
@@ -95,69 +182,33 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_profiles_updated BEFORE UPDATE ON profiles FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
+CREATE TRIGGER trg_platforms_updated BEFORE UPDATE ON platforms FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
+CREATE TRIGGER trg_creators_updated BEFORE UPDATE ON creators FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
 ```
 
-### 4.2. Triggery `updated_at`
-```sql
-CREATE TRIGGER trg_profiles_updated
-BEFORE UPDATE ON profiles
-FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
+**Tworzenie profilu po rejestracji**:
 
-CREATE TRIGGER trg_platforms_updated
-BEFORE UPDATE ON platforms
-FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
-
-CREATE TRIGGER trg_creators_updated
-BEFORE UPDATE ON creators
-FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
-```
-
-### 4.3. Automatyczne tworzenie profilu po rejestracji
 ```sql
 CREATE OR REPLACE FUNCTION create_profile_for_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO profiles(user_id) VALUES (NEW.id);
+  INSERT INTO public.profiles (user_id) VALUES (NEW.id);
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 CREATE TRIGGER on_auth_user_created
-AFTER INSERT ON auth.users
-FOR EACH ROW EXECUTE FUNCTION create_profile_for_new_user();
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION create_profile_for_new_user();
 ```
 
-### 4.4. RLS
-```sql
--- Włącz RLS na tabelach z danymi użytkownika
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_platforms ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_creators ENABLE ROW LEVEL SECURITY;
-ALTER TABLE watched_items ENABLE ROW LEVEL SECURITY;
+## 7. Dodatkowe uwagi architektoniczne
 
--- profiles: tylko właściciel
-CREATE POLICY profile_is_owner ON profiles
-FOR ALL USING (user_id = auth.uid());
+1. **Cache'owanie JSON (`meta_data`)**: Kolumny `meta_data` w tabelach `creators` i `watched_items` służą do przechowywania danych, które rzadko się zmieniają (ścieżki do plakatów, opisy), aby odciążyć zewnętrzne API.
+2. **Unikalność Twórców**: Klucz unikalny na `(external_api_id, creator_role)` pozwala na istnienie tej samej osoby jako "Aktor" i "Reżyser" jako dwa osobne byty logiczne, co upraszcza filtrowanie.
+3. **Strategia zapytań**: Przy dodawaniu `watched_items` aplikacja powinna stosować strategię `ON CONFLICT DO NOTHING`, aby uniknąć błędów przy podwójnym kliknięciu przez użytkownika.
+4. **Service Role**: Zapis do tabeli `creators` powinien odbywać się wyłącznie przez Edge Functions z uprawnieniami `service_role` po uprzedniej walidacji danych z zewnętrznym API (TMDB). Użytkownik nie ma prawa bezpośredniego zapisu w tej tabeli.
 
--- user_platforms
-CREATE POLICY up_is_owner ON user_platforms
-FOR ALL USING (user_id = auth.uid());
-
--- user_creators
-CREATE POLICY uc_is_owner ON user_creators
-FOR ALL USING (user_id = auth.uid());
-
--- watched_items
-CREATE POLICY wi_is_owner ON watched_items
-FOR ALL USING (user_id = auth.uid());
-
--- Tabele słownikowe: publiczny odczyt
--- (RLS nie włączone dla platforms i creators)
-```
-
-## 5. Dodatkowe uwagi
-1. Wszystkie klucze główne korzystają z `uuid` generowanego przez `gen_random_uuid()` (rozszerzenie `pgcrypto`).
-2. Typy `creator_role` i `media_type` zdefiniowane jako ENUM upraszczają walidację i zapobiegają błędom literowym.
-3. Kolumny `created_at`/`updated_at` pozwalają na audyt zmian; aktualizacja `updated_at` jest automatyzowana.
-4. Fizyczne usuwanie danych (`DELETE`) oraz `ON DELETE CASCADE` zapewniają spójność przy usuwaniu konta użytkownika.
-5. Indeksy zostały zaprojektowane pod konkretne scenariusze zapytań (ekran rekomendacji, infinite scroll, wyszukiwanie twórców).
+<!-- end list -->

@@ -1,103 +1,82 @@
 # Streamly
 
-## Overview
+[![version](https://img.shields.io/badge/version-0.0.1-blue.svg)](../../releases)
 
-Streamly is a responsive web application (RWD) designed to solve decision paralysis for users subscribed to multiple streaming platforms (SVOD). The application aggregates movies and TV series available across your subscribed services in one place, filtered by your favorite creators (actors, directors). The main goal is to significantly reduce the time needed to find an interesting title to watch and eliminate the frustration of manually searching through each platform individually.
+Streamly is a responsive web application that eliminates decision paralysis for users subscribed to multiple SVOD platforms. It aggregates movies and series available across your paid subscriptions and filters them through your favourite creators (actors, directors) so that you can find something to watch in seconds instead of minutes.
 
-## Problem Statement
-
-Users with access to multiple streaming services such as Netflix, Disney+, or HBO Max often face a difficult choice when selecting what to watch. To find content featuring their favorite actor or director, they are forced to manually search through each platform's library. This process is time-consuming, inefficient, and frustrating, often resulting in users abandoning their original intent and choosing a random title from one platform's home screen, leading to wasted time and dissatisfaction.
+---
 
 ## Table of Contents
 
-- [Tech Stack](#tech-stack)
-- [Features](#features)
-- [Getting Started](#getting-started)
-- [Available Scripts](#available-scripts)
-- [Project Scope](#project-scope)
-- [Project Status](#project-status)
-- [License](#license)
+1. [Tech Stack](#tech-stack)
+2. [Getting Started Locally](#getting-started-locally)
+3. [Available Scripts](#available-scripts)
+4. [Project Scope](#project-scope)
+5. [Project Status](#project-status)
+6. [License](#license)
+
+---
 
 ## Tech Stack
 
 ### Frontend
-- **Astro 5** - Fast, lightweight static site generator with minimal JavaScript
-- **React 19** - Interactive components and dynamic UI elements
-- **TypeScript 5** - Static type checking for code quality and IDE support
-- **Tailwind CSS 4** - Utility-first CSS framework for styling
-- **Shadcn/ui** - Accessible component library built on Radix UI
+
+- **Astro 5** – lightning-fast static site generator
+- **React 19** – interactive components when needed
+- **TypeScript 5** – first-class static typing
+- **Tailwind CSS 4** – utility-first styling
+- **shadcn/ui** – accessible React component library
 
 ### Backend
-- **Supabase** - Backend-as-a-Service solution providing:
-  - PostgreSQL database
-  - User authentication and authorization
-  - Edge Functions for secure server-side operations
-  - API integration with external services
+
+- **Supabase** – PostgreSQL + Auth + Edge Functions
+- **@supabase/supabase-js 2.x** SDK for client & server communication
 
 ### External Services
-- **Movie of the Night API** - External API for movies and TV series data
-- **TMDB API** - Additional movie database integration (via Supabase Edge Functions)
 
-### DevOps & Deployment
-- **GitHub Actions** - CI/CD pipeline automation
-- **Docker** - Containerization
-- **DigitalOcean** - Hosting and deployment
+- **Movie of the Night API** – primary catalogue data
+- **TMDB API** – supplementary metadata via Supabase Edge Function
 
-### Development Tools
-- **ESLint** - Code linting and quality
-- **Prettier** - Code formatting
-- **Husky** - Git hooks
-- **lint-staged** - Pre-commit linting
+### Dev & Ops
 
-## Features
+- **GitHub Actions** – CI/CD pipelines
+- **Docker** – containerisation
+- **DigitalOcean** – hosting
+- **ESLint / Prettier / Husky / lint-staged** – DX & code quality
 
-### MVP Features Included
-- **User Accounts**: Registration, login, password reset, and account deletion (GDPR compliant)
-- **Onboarding**: Mandatory two-step setup for selecting streaming platforms and favorite creators
-- **Recommendations**: Aggregated, sorted list of movies and TV series matching your criteria
-- **Infinite Scroll**: Load up to 50 recommendations dynamically
-- **Mark as Watched**: Remove titles from recommendations and track viewing history
-- **Profile Management**: Edit streaming platforms, manage favorite creators, view watched history
-- **Responsive Design**: Fully responsive web application optimized for all devices
+---
 
-### Features Excluded from MVP
-- Advanced filtering and sorting (by genre, ratings, etc.)
-- Detailed movie/series pages
-- Rating and review system
-- Social features
-- Push notifications
-- Movie posters on recommendation lists
-- Direct links to streaming platforms
-- Content outside subscriptions (TVOD/EST)
-
-## Getting Started
+## Getting Started Locally
 
 ### Prerequisites
 
-- **Node.js**: 22.14.0 (specified in `.nvmrc`)
-- **npm**: Comes with Node.js
+- **Node.js 22.14.0** (see `.nvmrc`)
+- **npm** built-in with Node 22
 
-### Local Development Setup
+### Setup
 
 1. **Clone the repository**
+
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/your-org/streamly.git
    cd 10x-project
    ```
 
-2. **Install Node.js version**
-   If using NVM (Node Version Manager):
+2. **Install the correct Node version** (with [nvm](https://github.com/nvm-sh/nvm))
+
    ```bash
    nvm use
    ```
 
 3. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 4. **Configure environment variables**
-   Create a `.env.local` file in the project root with:
+   Duplicate `.env.example` → `.env.local` and fill in the values:
+
    ```env
    PUBLIC_SUPABASE_URL=your_supabase_url
    PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
@@ -105,72 +84,59 @@ Users with access to multiple streaming services such as Netflix, Disney+, or HB
    MOVIE_API_KEY=your_movie_api_key
    ```
 
-5. **Start the development server**
+5. **Run the development server**
+
    ```bash
    npm run dev
    ```
-   The application will be available at `http://localhost:3000`
+
+   Open `http://localhost:3000` in your browser.
+
+---
 
 ## Available Scripts
 
 | Script | Description |
 |--------|-------------|
-| `npm run dev` | Start the development server with hot reload |
-| `npm run build` | Build the project for production |
-| `npm run preview` | Preview the production build locally |
-| `npm run astro` | Run Astro CLI commands directly |
-| `npm run lint` | Check code quality with ESLint |
-| `npm run lint:fix` | Fix linting issues automatically |
-| `npm run format` | Format code with Prettier |
+| `dev` | Start the development server with hot reload |
+| `build` | Build the project for production |
+| `preview` | Preview the production build locally |
+| `astro` | Run Astro CLI commands directly |
+| `lint` | Lint the codebase with ESLint |
+| `lint:fix` | Auto-fix lint errors |
+| `format` | Format the codebase with Prettier |
+
+---
 
 ## Project Scope
 
 ### Included in MVP
-- Complete user authentication system (registration, login, password reset, account deletion)
-- Two-step onboarding process with platform and creator selection
-- Responsive main feed with aggregated recommendations
-- Infinite scroll pagination for recommendations
-- Profile management interface
-- Watch history tracking
-- Full GDPR compliance for data deletion
+
+- User authentication (register, login, reset password, delete account)
+- Mandatory two-step onboarding (choose platforms, add favourite creators)
+- Aggregated recommendation feed (SVOD only) sorted by release date
+- Infinite scroll up to 50 items
+- Mark title as watched & watch history
+- Profile management for platforms & creators
+- Responsive UI across devices
 
 ### Excluded from MVP
-- Social features and user interactions
-- Advanced analytics and recommendations engine
-- Mobile-specific native features
-- API integrations beyond Movie of the Night and TMDB
-- Real-time notifications
-- Third-party service integrations
-- Premium features or monetization
 
-## Project Status
-
-**Version**: 0.0.1 (Early Development)
-
-This project is in active development. The MVP features are currently being implemented. The application structure follows Astro best practices with a clear separation between static content and interactive React components.
-
-### Project Structure
-```
-src/
-├── layouts/           # Astro layout components
-├── pages/             # Astro page routes
-├── pages/api/         # API endpoints
-├── middleware/        # Astro middleware
-├── components/        # React and Astro components
-├── components/ui/     # Shadcn/ui components
-├── db/                # Supabase clients and types
-├── lib/               # Services and helper functions
-├── types.ts           # Shared types and DTOs
-└── assets/            # Static internal assets
-```
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+- Advanced filters (genre, ratings, etc.)
+- Detailed movie/series pages
+- User ratings, reviews, social interactions
+- Push / email notifications
+- Deep-links to external streaming apps
+- Transactional content (TVOD / EST)
 
 ---
 
-**For more information:**
-- Visit our [Project Documentation](#) (if available)
-- Check out the [Product Requirements Document](.ai/prd.md) for detailed feature specifications
-- Review [Technical Stack Details](.ai/tech-stack.md)
+## Project Status
+
+`0.0.1` • **Early Development** – core architecture in place, implementing MVP features. See the [Product Requirements Document](.ai/prd.md) for full details and the [Tech Stack](.ai/tech-stack.md) for rationale.
+
+---
+
+## License
+
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.

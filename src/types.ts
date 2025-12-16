@@ -44,10 +44,10 @@ export interface PaginatedResponse<T> {
 /* ------------------------------------------------------------------ */
 
 // Response DTO
-export type ProfileDTO = Pick<TablesRow<"profiles">, "user_id" | "created_at" | "onboarding_step">;
+export type ProfileDTO = Pick<TablesRow<"profiles">, "user_id" | "created_at" | "onboarding_status">;
 
 // Command: PATCH /profile
-export type ProfileUpdateCommand = Pick<TablesUpdate<"profiles">, "onboarding_step">;
+export type ProfileUpdateCommand = Pick<TablesUpdate<"profiles">, "onboarding_status">;
 
 /* ------------------------------------------------------------------ */
 /* Onboarding                                                        */
@@ -56,7 +56,7 @@ export type ProfileUpdateCommand = Pick<TablesUpdate<"profiles">, "onboarding_st
 
 // Response: GET /onboarding/state
 export interface OnboardingStateDTO {
-  step: TablesRow<"profiles">["onboarding_step"];
+  step: TablesRow<"profiles">["onboarding_status"];
 }
 
 // Command: PUT /onboarding/platforms
@@ -127,7 +127,10 @@ export type WatchedItemDTO = Pick<
 
 // Command: POST /me/watched
 // strict subset of Insert to match API Plan inputs
-export type WatchedItemCreateCommand = Pick<WatchedInsert, "external_movie_id" | "media_type" | "title" | "year">;
+export type WatchedItemCreateCommand = Pick<
+  WatchedInsert,
+  "external_movie_id" | "media_type" | "title" | "year" | "meta_data"
+>;
 
 /* ------------------------------------------------------------------ */
 /* Recommendations                                                   */

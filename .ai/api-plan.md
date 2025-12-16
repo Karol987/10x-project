@@ -4,90 +4,321 @@
 
 | Resource | Database Table | Description |
 |----------|----------------|-------------|
-| Auth User | `auth.users` | Registered account owned by Supabase Auth |
-| Profile | `profiles` | Per-user profile record storing onboarding progress |
-| Platform | `platforms` | Dictionary of streaming services (Netflix, HBO Max …) |
-| User Platform | `user_platforms` | M:N link between Auth User and Platform (subscriptions) |
-| Creator | `creators` | Actor / director dictionary coming from external API |
-| User Creator | `user_creators` | M:N link between Auth User and Creator (favorites) |
-| Watched Item | `watched_items` | Movie / series a user has marked as watched |
-| Recommendation | — (view / edge-function) | Aggregated list matching user preferences |
+| Auth User | `auth.users` | Account managed by Supabase Auth (email / password) |
+| Profile | `profiles` | Per–user profile & onboarding status (1-to-1 with Auth User) |
+| Platform | `platforms` | Dictionary of streaming platforms (Netflix, HBO Max …) |
+| User Platform | `user_platforms` | M:N link between Auth User and Platform – subscriptions |
+| Creator | `creators` | Actor / director dictionary synced from external API |
+| User Creator | `user_creators` | M:N link between Auth User and Creator – favourites |
+| Watched Item | `watched_items` | Movie / series a user marked as watched |
+| Recommendation | — (Edge Function / DB view) | Aggregated list matching user preferences |
+| Onboarding | — | Wizard helpers (state, step 1 – platforms, step 2 – creators) |
 
 ## 2. Endpoints
 
-Notation
-- `:id` – UUID
-- `:slug` – unique text identifier
-- All endpoints are **relative to `/api`** and return/accept JSON.
-- Every request (except auth) requires a **Bearer token** issued by Supabase Auth in the `Authorization` header.
-- Pagination: `?limit=50&cursor=<id>` (forward cursor) unless stated otherwise.
+Unless stated otherwise all endpoints:
+• are relative to `/api` and return / accept JSON
+• require the `Authorization: Bearer <jwt>` header issued by Supabase (401 if missing / invalid)
+• support pagination with the forward cursor pattern `?limit=<int>&cursor=<id>` (default limit = 50)
+
+### 2.1 Authentication (delegated to Supabase)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/auth/register` | Proxy to Supabase sign-up (email, password) |
+| POST | `/auth/login` | Proxy to Supabase sign-in (email, password) |
+| POST | `/auth/logout` | Clears http-only auth cookies |
+| POST | `/auth/forgot-password` | Starts password reset flow |
+| POST | `/auth/reset-password` | Completes password reset with token |
+
+> The frontend may call Supabase client SDK directly; the above thin wrappers allow a uniform `/api/*` surface when needed.
 
 ### 2.2 Profile
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/profile` | Get own profile |
-| PATCH | `/profile` | Update `onboarding_step` *(admin only; client normally uses onboarding endpoints)* |
+
+| Method | Path | Description | Req. Body | Res. Body |
+|--------|------|-------------|-----------|-----------|
+| GET | `/profile` | Get own profile | — | `Profile` |
+| PATCH | `/profile` | Update `country_code` only | `{ country_code: string }` | `Profile` |
+
+`Profile` response
+
+```json
+{
+  "user_id": "uuid",
+  "country_code": "PL",
+  "onboarding_status": "not_started" | "platforms_selected" | "completed",
+  "created_at": "2025-12-11T12:34:56Z",
+  "updated_at": "2025-12-11T12:34:56Z"
+}
+```
 
 ### 2.3 Onboarding Wizard
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/onboarding/state` | Returns `{ step: number }` from `profiles.onboarding_step` |
-| PUT | `/onboarding/platforms` | Save selected platform ids (body: `{ platform_ids: uuid[] }`) → completes **Step 1** |
-| PUT | `/onboarding/creators` | Save selected creator ids (body: `{ creator_ids: uuid[] }`) → completes **Step 2** & sets `onboarding_step = 2` |
 
-### 2.4 Platforms (dictionary)
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/platforms` | List all platforms (public) |
-| GET | `/platforms/:slug` | Single platform |
+| Method | Path | Description | Body | Success |
+|--------|------|-------------|------|---------|
+| GET | `/onboarding/state` | Returns wizard progress | — | `{ step: 0 | 1 | 2 }` |
+| PUT | `/onboarding/platforms` | Saves selected platform IDs → completes step 1 | `{ platform_ids: uuid[] }` | 204 No Content |
+| PUT | `/onboarding/creators` | Saves selected creator IDs → completes step 2 & sets `onboarding_status = completed` | `{ creator_ids: uuid[] }` | 204 No Content |
 
-*(Admin endpoints for create/update/delete omitted for MVP)*
+Validation
+
+* Step 1 requires ≥ 1 platform (`422` if fewer)
+* Step 2 requires ≥ 3 creators (`422` if fewer)
+
+### 2.4 Platforms (public dictionary)
+
+| Method | Path | Description | Query | Res. Body |
+|--------|------|-------------|-------|-----------|
+| GET | `/platforms` | List all platforms (cache 1 h) | — | `Platform[]` |
+| GET | `/platforms/:slug` | Single platform by slug | — | `Platform` |
+
+`Platform`
+
+```json
+{
+  "id": "uuid",
+  "name": "Netflix",
+  "slug": "netflix",
+  "logo_url": "https://…",
+  "created_at": "…",
+  "updated_at": "…"
+}
+```
 
 ### 2.5 User Platforms (subscriptions)
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/me/platforms` | List my platforms |
-| PUT | `/me/platforms` | Replace list (body: `{ platform_ids: uuid[] }`) |
 
-### 2.6 Creators (dictionary + search)
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/creators` | Paginated list; supports `?q=<search>` (ILIKE) & `?role=actor|director` |
-| GET | `/creators/:id` | Single creator |
+| Method | Path | Description | Body | Res. Body |
+|--------|------|-------------|------|-----------|
+| GET | `/me/platforms` | List my selected platforms | — | `Platform[]` |
+| PUT | `/me/platforms` | Replace whole list (≥ 1) | `{ platform_ids: uuid[] }` | `Platform[]` |
 
-### 2.7 User Creators (favorites)
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/me/creators` | List my favorite creators |
-| POST | `/me/creators` | Add (body: `{ creator_id: uuid }`) |
-| DELETE | `/me/creators/:id` | Remove favorite |
+### 2.6 Creators (public dictionary)
+
+| Method | Path | Description | Query Params | Res. Body |
+|--------|------|-------------|--------------|-----------|
+| GET | `/creators` | Paginated list | `?q=<text>&role=actor|director` | `Creator[]` |
+| GET | `/creators/:id` | Single creator | — | `Creator` |
+
+`Creator`
+
+```json
+{
+  "id": "uuid",
+  "external_api_id": "12345",
+  "name": "Keanu Reeves",
+  "creator_role": "actor",
+  "avatar_url": "https://…",
+  "meta_data": { … },
+  "last_synced_at": "…"
+}
+```
+
+### 2.7 User Creators (favourites)
+
+| Method | Path | Description | Body | Success |
+|--------|------|-------------|------|---------|
+| GET | `/me/creators` | List my favourite creators | — | `Creator[]` |
+| POST | `/me/creators` | Add favourite | `{ creator_id: uuid }` | 201 Created – `Creator` |
+| DELETE | `/me/creators/:id` | Remove favourite link | — | 204 No Content |
 
 ### 2.8 Watched Items
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/me/watched` | Paginated list of watched items |
-| POST | `/me/watched` | Mark as watched (body: WatchedItemCreate) |
-| DELETE | `/me/watched/:id` | Unmark |
 
-WatchedItemCreate
+| Method | Path | Description | Query | Body | Res. Body |
+|--------|------|-------------|-------|------|-----------|
+| GET | `/me/watched` | Paginated list of watched items | `?cursor` | — | `WatchedItem[]` |
+| POST | `/me/watched` | Mark as watched | — | `WatchedItemCreate` | 201 Created – `WatchedItem` |
+| DELETE | `/me/watched/:id` | Unmark watched | — | — | 204 No Content |
+
+#### POST `/me/watched` - Mark movie/series as watched
+
+**Request Body** (`WatchedItemCreate`)
+
 ```json
 {
   "external_movie_id": "string",
   "media_type": "movie" | "series",
   "title": "string",
-  "year": 2025
+  "year": 2025,
+  "meta_data": { "poster_path": "/p.jpg" }
 }
 ```
 
+**Field Requirements:**
+- `external_movie_id` (string, required) – ID from external API (e.g., IMDb ID)
+- `media_type` (enum, required) – Must be either `"movie"` or `"series"`
+- `title` (string, required) – Title of the movie/series, minimum 1 character
+- `year` (number, optional) – Production year
+- `meta_data` (object, required) – Must contain `poster_path` field (string)
+
+**Success Response** (201 Created)
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440001",
+  "external_movie_id": "tt0133093",
+  "media_type": "movie",
+  "title": "The Matrix",
+  "year": 1999,
+  "created_at": "2025-12-15T10:30:45.123Z"
+}
+```
+
+**Error Responses:**
+
+| Status | Error | Description | Response Body |
+|--------|-------|-------------|---------------|
+| 400 | ValidationError | Invalid request body | `{ "error": "ValidationError", "message": "Validation error", "details": {...} }` |
+| 400 | InvalidJSON | Malformed JSON | `{ "error": "InvalidJSON", "message": "Invalid JSON body" }` |
+| 401 | Unauthorized | Missing/invalid JWT | `{ "error": "Unauthorized" }` |
+| 409 | Conflict | Already marked as watched | `{ "error": "Conflict", "message": "Already marked as watched" }` |
+| 500 | ServerError | Unexpected error | `{ "error": "ServerError", "message": "Internal server error" }` |
+
+**cURL Examples:**
+
+```bash
+# Success - Mark a movie as watched
+curl -X POST http://localhost:4321/api/me/watched \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "external_movie_id": "tt0133093",
+    "media_type": "movie",
+    "title": "The Matrix",
+    "year": 1999,
+    "meta_data": {
+      "poster_path": "/path/to/poster.jpg",
+      "backdrop_path": "/path/to/backdrop.jpg"
+    }
+  }'
+
+# Response (201):
+# {
+#   "id": "550e8400-e29b-41d4-a716-446655440001",
+#   "external_movie_id": "tt0133093",
+#   "media_type": "movie",
+#   "title": "The Matrix",
+#   "year": 1999,
+#   "created_at": "2025-12-15T10:30:45.123Z"
+# }
+
+# Mark a series as watched (without year)
+curl -X POST http://localhost:4321/api/me/watched \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "external_movie_id": "tt0944947",
+    "media_type": "series",
+    "title": "Game of Thrones",
+    "meta_data": {
+      "poster_path": "/path/to/poster.jpg"
+    }
+  }'
+
+# Error - Missing required field (400)
+curl -X POST http://localhost:4321/api/me/watched \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "external_movie_id": "tt0133093",
+    "media_type": "movie"
+  }'
+
+# Response (400):
+# {
+#   "error": "ValidationError",
+#   "message": "Validation error",
+#   "details": {
+#     "_errors": [],
+#     "title": {
+#       "_errors": ["Required"]
+#     },
+#     "meta_data": {
+#       "_errors": ["Required"]
+#     }
+#   }
+# }
+
+# Error - Invalid media_type (400)
+curl -X POST http://localhost:4321/api/me/watched \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "external_movie_id": "tt0133093",
+    "media_type": "documentary",
+    "title": "The Matrix",
+    "meta_data": { "poster_path": "/p.jpg" }
+  }'
+
+# Response (400):
+# {
+#   "error": "ValidationError",
+#   "message": "Validation error",
+#   "details": {
+#     "_errors": [],
+#     "media_type": {
+#       "_errors": ["Media type must be 'movie' or 'series'"]
+#     }
+#   }
+# }
+
+# Error - Missing poster_path in meta_data (400)
+curl -X POST http://localhost:4321/api/me/watched \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "external_movie_id": "tt0133093",
+    "media_type": "movie",
+    "title": "The Matrix",
+    "year": 1999,
+    "meta_data": {
+      "backdrop_path": "/backdrop.jpg"
+    }
+  }'
+
+# Response (400):
+# {
+#   "error": "ValidationError",
+#   "message": "Validation error",
+#   "details": {
+#     "_errors": [],
+#     "meta_data": {
+#       "_errors": ["meta_data must contain poster_path field"]
+#     }
+#   }
+# }
+
+# Error - Duplicate watched item (409)
+curl -X POST http://localhost:4321/api/me/watched \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "external_movie_id": "tt0133093",
+    "media_type": "movie",
+    "title": "The Matrix",
+    "year": 1999,
+    "meta_data": { "poster_path": "/p.jpg" }
+  }'
+
+# Response (409) - if already marked as watched:
+# {
+#   "error": "Conflict",
+#   "message": "Already marked as watched"
+# }
+```
+
+**Notes:**
+- The `meta_data` object can contain additional fields beyond `poster_path` (e.g., `backdrop_path`, `overview`, etc.)
+- Duplicate detection is based on the combination of `(user_id, external_movie_id, media_type)`
+- Successfully marking an item as watched will remove it from the recommendations list
+
 ### 2.9 Recommendations
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/recommendations` | Returns up to 50 titles matching rules (`?cursor=<uuid>` pagination) |
 
-Query parameters:
-- `cursor` – last recommendation id for infinite scroll (optional)
+| Method | Path | Description | Query | Res. Body |
+|--------|------|-------------|-------|-----------|
+| GET | `/recommendations` | Returns up to 50 titles that match BOTH favourite creators & subscribed platforms | `?cursor=<uuid>` | `Recommendation[]` |
 
-Response (array items):
+`Recommendation`
+
 ```json
 {
   "id": "uuid",
@@ -102,55 +333,54 @@ Response (array items):
 }
 ```
 
-
 ## 3. Authentication & Authorization
 
-Supabase issues JWT access tokens. The backend verifies the token on every request and exposes `auth.uid()` for Row Level Security in Postgres.
-
-Policies already defined in schema ensure that:
-- users can read/update only their own rows in `profiles`, `user_platforms`, `user_creators`, `watched_items`.
-- `platforms` & `creators` are public-read.
+* Supabase issues JWTs; middleware verifies and injects `auth.uid()` into request context.
+* Row-Level Security (RLS) in Postgres ensures users can access only their rows.
+* Public endpoints: `GET /platforms`, `GET /creators`.
+* Admin-only endpoints (create / update / delete for dictionaries) are excluded from MVP – future work with `service_role` key.
 
 ## 4. Validation & Business Logic
 
-| Resource | Rule | Source |
-|----------|------|--------|
-| Profile | `onboarding_step` smallint 0-2 | schema |
-| User Platform | Must provide ≥1 platform in onboarding; UNIQUE(user_id, platform_id) | schema + PRD 3.1/3.2 |
-| User Creator | Must provide ≥3 creators in onboarding; UNIQUE(user_id, creator_id) | schema + PRD |
-| Creator | UNIQUE(external_api_id, creator_role) | schema |
-| Watched Item | UNIQUE(user_id, external_movie_id, media_type) | schema |
-| Recommendation | Must satisfy BOTH favorite creator AND subscribed platform | PRD 3.3 |
+| Resource | Rule | Error |
+|----------|------|-------|
+| Profile | `country_code` must be 2-char ISO 3166; enum `onboarding_status` controlled by wizard | 400 |
+| User Platform | Must send ≥ 1 platform in onboarding; UNIQUE(user_id, platform_id) | 422 / 409 |
+| User Creator | Must send ≥ 3 creators on step 2; UNIQUE(user_id, creator_id) | 422 / 409 |
+| Creator | UNIQUE(external_api_id, creator_role) – handled server side | 409 |
+| Watched Item | UNIQUE(user_id, external_movie_id, media_type) | 409 |
+| Recommendation | Result must satisfy BOTH a favourite creator AND subscribed platform | — (edge logic) |
 
-Additional business rules
-1. Completing onboarding steps updates `profiles.onboarding_step`.
-2. Deleting account cascades via `ON DELETE CASCADE` triggers.
-3. Mark as watched removes item from recommendation view.
+Additional rules
+
+1. Completing wizard steps updates `profiles.onboarding_status` (step 0 → 1 → 2).
+2. Deleting account cascades via `ON DELETE CASCADE` triggers across all tables.
+3. Posting to `/me/watched` removes the item from the `/recommendations` view (client may refresh list).
 
 ## 5. Error Handling
 
 | HTTP Status | Reason |
 |-------------|--------|
-| 400 Bad Request | Validation failed (missing field, invalid enum) |
+| 400 Bad Request | Validation failed (missing field, wrong enum) |
 | 401 Unauthorized | Missing / invalid JWT |
 | 403 Forbidden | Violates RLS (accessing someone else’s row) |
 | 404 Not Found | Resource not found |
-| 409 Conflict | Unique constraint violated (e.g., duplicate favorite) |
-| 422 Unprocessable Entity | Business rule violation (less than 3 creators on onboarding) |
+| 409 Conflict | Unique constraint violated |
+| 422 Unprocessable Entity | Business rule violation (e.g., < 3 creators) |
 | 429 Too Many Requests | Rate-limit triggered |
 | 500 Internal Server Error | Unhandled exception |
 
-## 6. Rate Limiting & Security
+## 6. Security & Rate Limiting
 
-- Global rate limit: 100 req/min per IP; stricter (20) for `/auth/*`.
-- Input sanitization & JSON schema validation on every body.
-- All responses include standard `Cache-Control: no-store, private` except dictionary endpoints (`platforms`, `creators`) which may be cached for 1 hour.
-- HTTPS enforced; HSTS, CORS restricted to first-party domain.
+* Global limit: 100 req/min per IP (20 for `/auth/*`).
+* All request bodies validated against JSON Schemas.
+* Standard `Cache-Control: no-store, private` on all responses except dictionary endpoints (max-age = 3600, public).
+* HTTPS enforced, HSTS enabled, CORS restricted to first-party origin.
 
 ---
 
-**Assumptions**
-- Dictionary tables (`platforms`, `creators`) are pre-populated by back-office processes, not by this API.
-- Edge Function backed by Supabase will implement recommendation query joining external API & our tables.
-- Admin maintenance endpoints & Webhooks for external API sync are future work.
+**Assumptions & Notes**
 
+* Dictionary tables are pre-populated by back-office services – creation / update not part of this API scope.
+* Recommendation query is implemented in an Edge Function joining external API data with local tables.
+* Frontend may bypass auth proxy endpoints and call Supabase SDK directly if desired.
