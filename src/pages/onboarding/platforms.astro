@@ -1,0 +1,13 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { OnboardingPlatformsContainer } from "../../components/onboarding";
+import { Toaster } from "../../components/ui/sonner";
+
+// Disable prerendering for this page as it requires SSR for session checking
+export const prerender = false;
+---
+
+<Layout title="Onboarding - Wybierz platformy | Streamly">
+  <OnboardingPlatformsContainer client:load />
+  <Toaster client:load />
+</Layout>

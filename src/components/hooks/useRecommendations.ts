@@ -87,7 +87,7 @@ export function useRecommendations(): UseRecommendationsReturn {
         hasMore: data.length === ITEMS_PER_PAGE,
         cursor: data.length > 0 ? data[data.length - 1].id : prev.cursor,
       }));
-    } catch (error) {
+    } catch {
       setState((prev) => ({
         ...prev,
         isLoadingMore: false,
@@ -122,11 +122,11 @@ export function useRecommendations(): UseRecommendationsReturn {
       await markMovieAsWatched(command);
 
       toast.success("Oznaczono jako obejrzane");
-    } catch (error) {
+    } catch {
       // Restore item on error
       setState((prev) => ({
         ...prev,
-        items: [...prev.items, item].sort((a, b) => {
+        items: [...prev.items, item].sort(() => {
           // Try to maintain original order by comparing with nearby items
           return 0;
         }),

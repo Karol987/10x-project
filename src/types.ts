@@ -166,3 +166,86 @@ export interface RecommendationViewModel extends RecommendationDTO {
   /** Flag to hide element before API confirmation (optimistic UI) */
   isOptimisticallyHidden?: boolean;
 }
+
+/* ------------------------------------------------------------------ */
+/* Onboarding Creators View Models                                   */
+/* ------------------------------------------------------------------ */
+
+/**
+ * ViewModel extending CreatorDTO with UI-specific data for search results
+ * Includes birth year extracted from meta_data for display purposes
+ */
+export interface CreatorViewModel extends CreatorDTO {
+  /** Birth year extracted from meta_data during API response mapping */
+  birthYear?: string | number;
+}
+
+/**
+ * UI state for the onboarding creators selection flow
+ * Manages search, selection, and submission states
+ */
+export interface OnboardingCreatorsUIState {
+  /** List of creators selected by the user */
+  selectedCreators: CreatorDTO[];
+  /** Current search query string */
+  searchQuery: string;
+  /** Search results from the API */
+  searchResults: CreatorDTO[];
+  /** Current operation status */
+  status: "idle" | "searching" | "submitting" | "error";
+  /** Error message to display to user */
+  errorMessage?: string;
+}
+
+/* ------------------------------------------------------------------ */
+/* Onboarding Platforms View Models                                  */
+/* ------------------------------------------------------------------ */
+
+/**
+ * ViewModel extending PlatformDTO with UI-specific selection state
+ * Used in the onboarding platforms selection flow
+ */
+export interface PlatformSelectionViewModel extends PlatformDTO {
+  /** Flag indicating if this platform is currently selected */
+  isSelected: boolean;
+}
+
+/* ------------------------------------------------------------------ */
+/* History View Models                                               */
+/* ------------------------------------------------------------------ */
+
+/**
+ * ViewModel extending WatchedItemDTO with UI-specific state
+ * Used for managing delete operations in the history view
+ */
+export interface WatchedItemViewModel extends WatchedItemDTO {
+  /** Flag indicating if this item is currently being deleted */
+  isDeleting?: boolean;
+}
+
+/* ------------------------------------------------------------------ */
+/* Profile View Models                                               */
+/* ------------------------------------------------------------------ */
+
+/**
+ * ViewModel for platform state in Profile UI
+ * Extends PlatformDTO with selection and loading states
+ */
+export interface ProfilePlatformViewModel extends PlatformDTO {
+  /** Flag indicating if this platform is currently selected */
+  isSelected: boolean;
+  /** Loading state for this specific card during PUT operation */
+  isPending: boolean;
+}
+
+/**
+ * State for creator search functionality in Profile view
+ */
+export interface CreatorSearchState {
+  /** Search results from API */
+  results: CreatorDTO[];
+  /** Loading state during search */
+  isLoading: boolean;
+  /** Current search query */
+  query: string;
+}

@@ -37,8 +37,7 @@ export const GET: APIRoute = async ({ locals }) => {
     }
 
     return jsonResponse<ProfileDTO>(profile, 200);
-  } catch (error) {
-    console.error("Error fetching profile:", error);
+  } catch {
     return errorResponse("ServerError", 500, "Internal server error");
   }
 };
@@ -71,8 +70,6 @@ export const PATCH: APIRoute = async ({ locals, request }) => {
 
     return jsonResponse<ProfileDTO>(updatedProfile, 200);
   } catch (error: unknown) {
-    console.error("Error updating profile:", error);
-
     // Handle specific Supabase errors
     if (error && typeof error === "object" && "code" in error && error.code === "PGRST116") {
       return errorResponse("NotFound", 404, "Profile not found");

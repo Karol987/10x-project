@@ -1,0 +1,13 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { OnboardingCreatorsContainer } from "../../components/onboarding";
+import { Toaster } from "../../components/ui/sonner";
+
+// Disable prerendering for this page as it requires client-side interactivity
+export const prerender = false;
+---
+
+<Layout title="Onboarding - Wybierz twórców | Streamly">
+  <OnboardingCreatorsContainer client:load />
+  <Toaster client:load />
+</Layout>

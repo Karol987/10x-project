@@ -56,9 +56,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
 
     // Return 200 OK with paginated results
     return jsonResponse<PaginatedResponse<CreatorDTO>>(result, 200);
-  } catch (error: unknown) {
-    console.error("Error fetching favorite creators:", error);
-
+  } catch {
     // Handle all errors as 500 Internal Server Error
     return errorResponse("ServerError", 500, "Internal server error");
   }
@@ -110,8 +108,6 @@ export const POST: APIRoute = async ({ locals, request }) => {
     // Return 201 Created with the creator
     return jsonResponse<CreatorDTO>(creator, 201);
   } catch (error: unknown) {
-    console.error("Error adding favorite creator:", error);
-
     // Handle creator not found (404)
     if (error instanceof CreatorNotFoundError) {
       return errorResponse("NotFound", 404, "Creator not found");

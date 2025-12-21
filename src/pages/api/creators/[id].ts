@@ -43,8 +43,6 @@ export const GET: APIRoute = async ({ locals, params }) => {
     // Return 200 OK with creator data
     return jsonResponse<CreatorDTO>(creator, 200);
   } catch (error: unknown) {
-    console.error("Error fetching creator:", error);
-
     // Handle creator not found (404)
     if (error instanceof CreatorNotFoundError) {
       return errorResponse("NotFound", 404, "Creator not found");
@@ -54,5 +52,3 @@ export const GET: APIRoute = async ({ locals, params }) => {
     return errorResponse("ServerError", 500, "Internal server error");
   }
 };
-
-

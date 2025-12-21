@@ -145,11 +145,11 @@ Validation
 
 **Field Requirements:**
 
-- `external_movie_id` (string, required) – ID from external API (e.g., IMDb ID)
-- `media_type` (enum, required) – Must be either `"movie"` or `"series"`
-- `title` (string, required) – Title of the movie/series, minimum 1 character
-- `year` (number, optional) – Production year
-- `meta_data` (object, required) – Must contain `poster_path` field (string)
+* `external_movie_id` (string, required) – ID from external API (e.g., IMDb ID)
+* `media_type` (enum, required) – Must be either `"movie"` or `"series"`
+* `title` (string, required) – Title of the movie/series, minimum 1 character
+* `year` (number, optional) – Production year
+* `meta_data` (object, required) – Must contain `poster_path` field (string)
 
 **Success Response** (201 Created)
 
@@ -309,9 +309,9 @@ curl -X POST http://localhost:4321/api/me/watched \
 
 **Notes:**
 
-- The `meta_data` object can contain additional fields beyond `poster_path` (e.g., `backdrop_path`, `overview`, etc.)
-- Duplicate detection is based on the combination of `(user_id, external_movie_id, media_type)`
-- Successfully marking an item as watched will remove it from the recommendations list
+* The `meta_data` object can contain additional fields beyond `poster_path` (e.g., `backdrop_path`, `overview`, etc.)
+* Duplicate detection is based on the combination of `(user_id, external_movie_id, media_type)`
+* Successfully marking an item as watched will remove it from the recommendations list
 
 ### 2.9 Recommendations
 

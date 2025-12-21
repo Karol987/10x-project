@@ -1,11 +1,11 @@
-// src/pages/api/me/watched.ts
+// src/pages/api/me/watched/index.ts
 
 import type { APIRoute } from "astro";
-import { DEFAULT_USER_ID } from "../../../db/supabase.client";
-import { WatchedItemCreateSchema, WatchedItemsPaginationSchema } from "../../../lib/schemas/watched.schema";
-import { WatchedService, WatchedItemAlreadyExistsError } from "../../../lib/services/watched.service";
-import { errorResponse, jsonResponse } from "../../../lib/utils";
-import type { WatchedItemDTO, WatchedItemCreateCommand, PaginatedResponse } from "../../../types";
+import { DEFAULT_USER_ID } from "../../../../db/supabase.client";
+import { WatchedItemCreateSchema, WatchedItemsPaginationSchema } from "../../../../lib/schemas/watched.schema";
+import { WatchedService, WatchedItemAlreadyExistsError } from "../../../../lib/services/watched.service";
+import { errorResponse, jsonResponse } from "../../../../lib/utils";
+import type { WatchedItemDTO, WatchedItemCreateCommand, PaginatedResponse } from "../../../../types";
 
 export const prerender = false;
 
@@ -52,9 +52,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
 
     // Return 200 OK with paginated results
     return jsonResponse<PaginatedResponse<WatchedItemDTO>>(result, 200);
-  } catch (error: unknown) {
-    console.error("Error fetching watched items:", error);
-
+  } catch {
     // Handle all errors as 500 Internal Server Error
     return errorResponse("ServerError", 500, "Internal server error");
   }
@@ -99,8 +97,8 @@ export const POST: APIRoute = async ({ locals, request }) => {
       return errorResponse("ValidationError", 400, "Validation error", validationResult.error.format());
     }
 
-    // Extract validated data
-    const command: WatchedItemCreateCommand = validationResult.data;
+    // Extract validated data and cast to command type
+    const command = validationResult.data as WatchedItemCreateCommand;
 
     // Create watched item using service
     const watchedService = new WatchedService(supabase);
@@ -109,8 +107,6 @@ export const POST: APIRoute = async ({ locals, request }) => {
     // Return 201 Created with the new watched item
     return jsonResponse<WatchedItemDTO>(watchedItem, 201);
   } catch (error: unknown) {
-    console.error("Error creating watched item:", error);
-
     // Handle duplicate watched item (409 Conflict)
     if (error instanceof WatchedItemAlreadyExistsError) {
       return errorResponse("Conflict", 409, "Already marked as watched");

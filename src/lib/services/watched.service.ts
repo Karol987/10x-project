@@ -68,8 +68,7 @@ export class WatchedService {
         throw new WatchedItemAlreadyExistsError();
       }
 
-      // Log and rethrow other errors
-      console.error("Failed to create watched item:", error);
+      // Rethrow other errors
       throw new Error(`Failed to create watched item: ${error.message}`);
     }
 
@@ -124,8 +123,7 @@ export class WatchedService {
 
       if (cursorError || !cursorItem) {
         // If cursor item not found, it might be deleted or invalid
-        // Return empty result or throw error based on requirements
-        console.warn("Cursor item not found:", cursor);
+        // Return empty result based on requirements
         return { data: [], next_cursor: null };
       }
 
@@ -137,7 +135,6 @@ export class WatchedService {
     const { data, error } = await query;
 
     if (error) {
-      console.error("Failed to fetch watched items:", error);
       throw new Error(`Failed to fetch watched items: ${error.message}`);
     }
 
@@ -185,7 +182,6 @@ export class WatchedService {
 
     // Handle errors
     if (error) {
-      console.error("Failed to delete watched item:", error);
       throw new Error(`Failed to delete watched item: ${error.message}`);
     }
 

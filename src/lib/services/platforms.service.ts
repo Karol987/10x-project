@@ -84,9 +84,7 @@ export class PlatformsService {
 
     // Extract platform data from the join result
     // Filter out any null values that might occur if FK constraint is violated
-    return data
-      .map((item) => item.platform)
-      .filter((platform): platform is PlatformDTO => platform !== null);
+    return data.map((item) => item.platform).filter((platform): platform is PlatformDTO => platform !== null);
   }
 
   /**
@@ -105,10 +103,7 @@ export class PlatformsService {
    */
   async replaceUserPlatforms(userId: UUID, platformIds: UUID[]): Promise<PlatformDTO[]> {
     // Step 1: Delete all existing user platforms
-    const { error: deleteError } = await this.supabase
-      .from("user_platforms")
-      .delete()
-      .eq("user_id", userId);
+    const { error: deleteError } = await this.supabase.from("user_platforms").delete().eq("user_id", userId);
 
     if (deleteError) {
       throw new Error(`Failed to delete existing user platforms: ${deleteError.message}`);
@@ -120,9 +115,7 @@ export class PlatformsService {
       platform_id: platformId,
     }));
 
-    const { error: insertError } = await this.supabase
-      .from("user_platforms")
-      .insert(insertData);
+    const { error: insertError } = await this.supabase.from("user_platforms").insert(insertData);
 
     if (insertError) {
       // FK constraint violation means invalid platform ID was provided
@@ -136,4 +129,3 @@ export class PlatformsService {
     return this.getUserPlatforms(userId);
   }
 }
-

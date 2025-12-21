@@ -7,7 +7,6 @@ import type {
   PaginatedResponse,
   UUID,
   PaginationQuery,
-  UserCreatorListItemDTO,
   CreatorRole,
 } from "../../types";
 
@@ -92,7 +91,6 @@ export class CreatorsService {
 
     // Handle database errors
     if (error) {
-      console.error("Failed to fetch creators:", error);
       throw new Error(`Failed to fetch creators: ${error.message}`);
     }
 
@@ -148,7 +146,6 @@ export class CreatorsService {
         throw new CreatorNotFoundError();
       }
 
-      console.error("Failed to fetch creator:", error);
       throw new Error(`Failed to fetch creator: ${error.message}`);
     }
 
@@ -200,7 +197,6 @@ export class CreatorsService {
 
     // Handle database errors
     if (error) {
-      console.error("Failed to fetch favorite creators:", error);
       throw new Error(`Failed to fetch favorite creators: ${error.message}`);
     }
 
@@ -273,7 +269,6 @@ export class CreatorsService {
         throw new CreatorAlreadyFavoriteError();
       }
 
-      console.error("Failed to add favorite creator:", error);
       throw new Error(`Failed to add favorite creator: ${error.message}`);
     }
 
@@ -302,7 +297,6 @@ export class CreatorsService {
 
     // Handle database errors
     if (error) {
-      console.error("Failed to remove favorite creator:", error);
       throw new Error(`Failed to remove favorite creator: ${error.message}`);
     }
 

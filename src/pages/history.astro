@@ -1,0 +1,13 @@
+---
+// src/pages/history.astro
+import Layout from "@/layouts/Layout.astro";
+import { HistoryList } from "@/components/history";
+
+// This page requires authentication
+// TODO: Add authentication check when middleware is ready
+---
+
+<Layout title="Historia Obejrzanych - 10x Project">
+  <HistoryList client:load />
+</Layout>
+

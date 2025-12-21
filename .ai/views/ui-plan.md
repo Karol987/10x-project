@@ -11,7 +11,8 @@ Aplikacja Streamly składa się z pięciu głównych obszarów routingu zabezpie
 5. **History** – lista obejrzanych pozycji.
 
 Hierarchia tras (Astro + React Router):
-```
+
+```text
 /
  ├─ /auth                (AuthLayout)
  │   ├─ /auth/login
@@ -25,6 +26,7 @@ Hierarchia tras (Astro + React Router):
  ├─ /profile             (AppLayout)
  └─ /history             (AppLayout)
 ```
+
 Warstwy `AuthLayout`, `WizardLayout` i `AppLayout` udostępniają odpowiednie paski nawigacji, kontekst tematu (light/dark) i obsługę błędów.
 
 ## 2. Lista widoków
@@ -39,7 +41,7 @@ Warstwy `AuthLayout`, `WizardLayout` i `AppLayout` udostępniają odpowiednie pa
 | **Onboarding – Twórcy** | `/onboarding/creators` | Dodanie ≥3 ulubionych twórców | Pole wyszukiwarki, lista wybranych | `SearchInput`, `CreatorChip`, `ProgressBar`, `Button` | Autocomplete live-region, disabled „Zakończ” dopóki <3 |
 | **Home (Rekomendacje)** | `/home` | Lista spersonalizowanych tytułów | Karty filmu/serialu (plakat, meta, przycisk „Watched”) | `RecommendationCard`, `InfiniteList`, `Skeleton`, `Toast`, `UndoSnackbar` | Lazy load obrazów, aria-busy na liście, optymistyczne mutacje |
 | **Profile – Preferencje** | `/profile` | Edycja platform i twórców + dark mode | Sekcje „Platformy”, „Twórcy”, przełącznik motywu | `PlatformCard`, `CreatorChip`, `ThemeToggle`, `Toast` | Automatyczny zapis, focus management |
-| **History** | `/history` | Przegląd obejrzanych pozycji | Paginated list z datą i tytułem | `WatchedItemRow`, `InfiniteList`, `Skeleton` | Forward-cursor hook, aria-labelledby list |
+,
 | **Session Expired** | (overlay) | Informacja o wygaśnięciu sesji | Modal z przyciskiem „Zaloguj ponownie” | `Modal`, `Button` | Trapping focus, role="alertdialog" |
 | **Global Error** | (fallback) | Wyświetlenie błędu krytycznego | Komunikat + przycisk „Odśwież” | `ErrorFallback` | Odseparowany od reszty UI |
 

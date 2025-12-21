@@ -68,18 +68,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
     const recommendations = await recommendationsService.get(userId, { limit, cursor });
 
     return jsonResponse<RecommendationDTO[]>(recommendations, 200);
-  } catch (error: unknown) {
-    console.error("Error fetching recommendations:", error);
-
-    // Handle specific errors
-    if (error && typeof error === "object") {
-      // Supabase errors
-      if ("code" in error && typeof error.code === "string") {
-        // Handle specific Supabase error codes if needed
-        console.error("Supabase error code:", error.code);
-      }
-    }
-
+  } catch {
     return errorResponse("ServerError", 500, "Unexpected error");
   }
 };

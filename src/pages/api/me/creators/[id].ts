@@ -45,8 +45,6 @@ export const DELETE: APIRoute = async ({ locals, params }) => {
     // Return 204 No Content on success
     return new Response(null, { status: 204 });
   } catch (error: unknown) {
-    console.error("Error removing favorite creator:", error);
-
     // Handle favorite not found (404)
     if (error instanceof FavoriteCreatorNotFoundError) {
       return errorResponse("NotFound", 404, "Favorite creator not found");

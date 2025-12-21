@@ -38,9 +38,7 @@ export const GET: APIRoute = async ({ locals }) => {
 
     // Return 200 OK with platforms list
     return jsonResponse<PlatformDTO[]>(platforms, 200);
-  } catch (error: unknown) {
-    console.error("Error fetching user platforms:", error);
-
+  } catch {
     // Handle errors as 500 Internal Server Error
     return errorResponse("ServerError", 500, "Internal Server Error");
   }
@@ -97,8 +95,6 @@ export const PUT: APIRoute = async ({ locals, request }) => {
     // Return 200 OK with updated platforms list
     return jsonResponse<PlatformDTO[]>(updatedPlatforms, 200);
   } catch (error: unknown) {
-    console.error("Error replacing user platforms:", error);
-
     // Handle invalid platform ID error (FK constraint violation)
     if (error instanceof Error && error.message.includes("invalid")) {
       return errorResponse("ValidationError", 400, error.message);
@@ -108,4 +104,3 @@ export const PUT: APIRoute = async ({ locals, request }) => {
     return errorResponse("ServerError", 500, "Internal Server Error");
   }
 };
-

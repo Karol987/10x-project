@@ -53,12 +53,8 @@ export const GET: APIRoute = async ({ locals, url }) => {
 
     // Return 200 OK with paginated results
     return jsonResponse<PaginatedResponse<CreatorDTO>>(result, 200);
-  } catch (error: unknown) {
-    console.error("Error fetching creators:", error);
-
+  } catch {
     // Handle all errors as 500 Internal Server Error
     return errorResponse("ServerError", 500, "Internal server error");
   }
 };
-
-

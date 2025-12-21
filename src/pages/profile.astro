@@ -1,0 +1,15 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { ProfileContainer } from "@/components/profile/ProfileContainer";
+import { Toaster } from "@/components/ui/sonner";
+
+// This page requires authentication - should be handled by middleware
+---
+
+<Layout title="Profil - Streamly">
+  <main class="min-h-screen bg-background px-4 py-8">
+    <ProfileContainer client:load />
+    <Toaster client:only="react" />
+  </main>
+</Layout>
+

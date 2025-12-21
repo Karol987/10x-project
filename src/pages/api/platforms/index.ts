@@ -32,11 +32,8 @@ export const GET: APIRoute = async ({ locals }) => {
     return jsonResponse<PlatformDTO[]>(platforms, 200, {
       "Cache-Control": "public, max-age=3600, s-maxage=3600",
     });
-  } catch (error: unknown) {
-    console.error("Error fetching platforms:", error);
-
+  } catch {
     // Handle all errors as 500 Internal Server Error
     return errorResponse("ServerError", 500, "Internal server error");
   }
 };
-
