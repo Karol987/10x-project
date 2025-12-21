@@ -56,7 +56,7 @@ Unless stated otherwise all endpoints:
 
 | Method | Path | Description | Body | Success |
 |--------|------|-------------|------|---------|
-| GET | `/onboarding/state` | Returns wizard progress | — | `{ step: 0 | 1 | 2 }` |
+| GET | `/onboarding/state` | Returns wizard progress | — | `{ step: 0,  1,  2 }` |
 | PUT | `/onboarding/platforms` | Saves selected platform IDs → completes step 1 | `{ platform_ids: uuid[] }` | 204 No Content |
 | PUT | `/onboarding/creators` | Saves selected creator IDs → completes step 2 & sets `onboarding_status = completed` | `{ creator_ids: uuid[] }` | 204 No Content |
 
@@ -96,7 +96,7 @@ Validation
 
 | Method | Path | Description | Query Params | Res. Body |
 |--------|------|-------------|--------------|-----------|
-| GET | `/creators` | Paginated list | `?q=<text>&role=actor|director` | `Creator[]` |
+| GET | `/creators` | Paginated list | ?q=<text>&role=actor/director | `Creator[]` |
 | GET | `/creators/:id` | Single creator | — | `Creator` |
 
 `Creator`
@@ -144,6 +144,7 @@ Validation
 ```
 
 **Field Requirements:**
+
 - `external_movie_id` (string, required) – ID from external API (e.g., IMDb ID)
 - `media_type` (enum, required) – Must be either `"movie"` or `"series"`
 - `title` (string, required) – Title of the movie/series, minimum 1 character
@@ -307,6 +308,7 @@ curl -X POST http://localhost:4321/api/me/watched \
 ```
 
 **Notes:**
+
 - The `meta_data` object can contain additional fields beyond `poster_path` (e.g., `backdrop_path`, `overview`, etc.)
 - Duplicate detection is based on the combination of `(user_id, external_movie_id, media_type)`
 - Successfully marking an item as watched will remove it from the recommendations list

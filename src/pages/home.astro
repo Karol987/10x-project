@@ -1,0 +1,14 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { RecommendationsFeed } from "@/components/recommendations/RecommendationsFeed";
+import { Toaster } from "@/components/ui/sonner";
+
+// This page requires authentication - should be handled by middleware
+---
+
+<Layout title="Rekomendacje - Streamly">
+  <main class="min-h-screen bg-background">
+    <RecommendationsFeed client:load />
+    <Toaster client:only="react" />
+  </main>
+</Layout>

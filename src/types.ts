@@ -154,4 +154,15 @@ export interface RecommendationDTO {
   creators: RecommendationCreatorDTO[];
   /** List of platform slugs where this item is available */
   platforms: PlatformSlug[];
+  /** Optional poster path for UI display */
+  poster_path?: string;
+}
+
+/**
+ * ViewModel extending RecommendationDTO with UI-specific state
+ * Used for optimistic updates in the recommendations feed
+ */
+export interface RecommendationViewModel extends RecommendationDTO {
+  /** Flag to hide element before API confirmation (optimistic UI) */
+  isOptimisticallyHidden?: boolean;
 }

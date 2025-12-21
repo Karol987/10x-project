@@ -14,7 +14,8 @@ export const prerender = false;
  * onboarding_step must be an integer between 0 and 2
  */
 const profileUpdateSchema = z.object({
-  onboarding_step: z.number().int().min(0).max(2),
+  onboarding_status: z.enum(["not_started", "platforms_selected", "completed"]),
+  country_code: z.string().length(2).optional(),
 });
 
 /**
@@ -62,11 +63,11 @@ export const PATCH: APIRoute = async ({ locals, request }) => {
       return errorResponse("ValidationError", 400, "Invalid request body", validationResult.error.format());
     }
 
-    const { onboarding_step } = validationResult.data;
+    const { onboarding_status } = validationResult.data;
 
     // Update profile using service
     const profileService = new ProfileService(supabase);
-    const updatedProfile = await profileService.updateOnboardingStep(userId, onboarding_step);
+    const updatedProfile = await profileService.updateOnboardingStep(userId, onboarding_status);
 
     return jsonResponse<ProfileDTO>(updatedProfile, 200);
   } catch (error: unknown) {

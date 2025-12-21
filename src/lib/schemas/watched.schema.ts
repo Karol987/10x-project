@@ -33,3 +33,34 @@ export const WatchedItemCreateSchema = z.object({
  * Type inference from the schema
  */
 export type WatchedItemCreateInput = z.infer<typeof WatchedItemCreateSchema>;
+
+/**
+ * Schema for validating GET /me/watched query parameters
+ *
+ * Validates pagination parameters for user's watched items list:
+ * - limit: optional number (default 20, max 100)
+ * - cursor: optional UUID string for keyset pagination
+ */
+export const WatchedItemsPaginationSchema = z.object({
+  limit: z.number().int().positive().max(100, "Limit cannot exceed 100").default(20).optional(),
+  cursor: z.string().uuid("Cursor must be a valid UUID").optional(),
+});
+
+/**
+ * Schema for validating DELETE /me/watched/:id path parameter
+ *
+ * Validates that the id is a valid UUID
+ */
+export const WatchedItemIdSchema = z.object({
+  id: z.string().uuid("Watched item ID must be a valid UUID"),
+});
+
+/**
+ * Type inference from the pagination schema
+ */
+export type WatchedItemsPaginationInput = z.infer<typeof WatchedItemsPaginationSchema>;
+
+/**
+ * Type inference from the ID schema
+ */
+export type WatchedItemIdInput = z.infer<typeof WatchedItemIdSchema>;
