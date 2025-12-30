@@ -51,7 +51,8 @@ export function useOnboardingPlatforms(): UseOnboardingPlatformsReturn {
           setErrorMessage(message);
           toast.error(message);
         } else {
-          const message = error instanceof Error ? error.message : "Wystąpił nieoczekiwany błąd podczas pobierania platform";
+          const message =
+            error instanceof Error ? error.message : "Wystąpił nieoczekiwany błąd podczas pobierania platform";
           setErrorMessage(message);
           toast.error(message);
         }

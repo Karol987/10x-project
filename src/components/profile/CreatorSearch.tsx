@@ -31,21 +31,24 @@ export function CreatorSearch({ excludeIds, onSelect }: CreatorSearchProps) {
 
   // Fetch search results
   const {
-    data: searchResults = [],
+    data: searchResponse,
     isLoading,
     error,
-  } = useQuery<CreatorDTO[]>({
+  } = useQuery<{ data: CreatorDTO[] }>({
     queryKey: ["creators", "search", debouncedQuery],
     queryFn: async () => {
       const response = await fetch(`/api/creators?q=${encodeURIComponent(debouncedQuery)}`);
       if (!response.ok) {
-        throw new Error("Nie udaĹ‚o siÄ™ wyszukaÄ‡ twĂłrcĂłw");
+        throw new Error("Nie udało się wyszukać twórców");
       }
       return response.json();
     },
     enabled: debouncedQuery.length >= 2,
     staleTime: 30000, // Cache for 30 seconds
   });
+
+  // Extract creators array from paginated response
+  const searchResults = searchResponse?.data || [];
 
   // Filter out already selected creators
   const filteredResults = searchResults.filter((creator) => !excludeIds.includes(creator.id));
@@ -78,14 +81,14 @@ export function CreatorSearch({ excludeIds, onSelect }: CreatorSearchProps) {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Wyszukaj twĂłrcĂłw..."
+          placeholder="Wyszukaj twórców..."
           className={cn(
             "w-full h-11 pl-10 pr-10 rounded-md border border-input bg-background",
             "text-sm placeholder:text-muted-foreground",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
             "transition-colors"
           )}
-          aria-label="Wyszukaj twĂłrcĂłw"
+          aria-label="Wyszukaj twórców"
           aria-describedby={query.length > 0 && query.length < 2 ? "search-hint" : undefined}
           aria-expanded={showResults ? true : undefined}
           aria-controls={showResults ? "search-results" : undefined}
@@ -101,7 +104,7 @@ export function CreatorSearch({ excludeIds, onSelect }: CreatorSearchProps) {
               "size-5 rounded-sm opacity-70 hover:opacity-100",
               "transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             )}
-            aria-label="WyczyĹ›Ä‡ wyszukiwanie"
+            aria-label="Wyczyść wyszukiwanie"
           >
             <X className="size-4" />
           </button>
@@ -121,7 +124,7 @@ export function CreatorSearch({ excludeIds, onSelect }: CreatorSearchProps) {
       {/* Hint for minimum characters */}
       {query.length > 0 && query.length < 2 && (
         <p id="search-hint" className="mt-1 text-xs text-muted-foreground">
-          Wpisz co najmniej 2 znaki, aby rozpoczÄ…Ä‡ wyszukiwanie
+          Wpisz co najmniej 2 znaki, aby rozpocząć wyszukiwanie
         </p>
       )}
 
@@ -135,14 +138,14 @@ export function CreatorSearch({ excludeIds, onSelect }: CreatorSearchProps) {
             "max-h-[320px] overflow-y-auto"
           )}
           role="listbox"
-          aria-label="Wyniki wyszukiwania twĂłrcĂłw"
+          aria-label="Wyniki wyszukiwania twórców"
         >
           {isLoading && <div className="p-4 text-center text-sm text-muted-foreground">Wyszukiwanie...</div>}
 
           {error && <div className="p-4 text-center text-sm text-destructive">Wystąpił błąd podczas wyszukiwania</div>}
 
           {!isLoading && !error && filteredResults.length === 0 && (
-            <div className="p-4 text-center text-sm text-muted-foreground">Nie znaleziono twĂłrcy o tym nazwisku</div>
+            <div className="p-4 text-center text-sm text-muted-foreground">Nie znaleziono twórcy o tym nazwisku</div>
           )}
 
           {!isLoading && !error && filteredResults.length > 0 && (
@@ -177,7 +180,7 @@ export function CreatorSearch({ excludeIds, onSelect }: CreatorSearchProps) {
                     <p className="font-medium text-sm truncate">{creator.name}</p>
                     {creator.creator_role && (
                       <p className="text-xs text-muted-foreground">
-                        {creator.creator_role === "actor" ? "Aktor" : "ReĹĽyser"}
+                        {creator.creator_role === "actor" ? "Aktor" : "Reżyser"}
                       </p>
                     )}
                   </div>

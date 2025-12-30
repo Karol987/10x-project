@@ -23,3 +23,5 @@ create type onboarding_status as enum ('not_started', 'platforms_selected', 'com
 
 
 
+
+

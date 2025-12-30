@@ -6,6 +6,7 @@ import type {
   CreatorDTO,
   UserPlatformsReplaceCommand,
   AddUserCreatorCommand,
+  PaginatedResponse,
 } from "@/types";
 import { toast } from "sonner";
 
@@ -50,10 +51,10 @@ export function useProfilePreferences() {
 
   // Fetch user's favorite creators
   const {
-    data: userCreators = [],
+    data: userCreatorsResponse,
     isLoading: isLoadingUserCreators,
     error: userCreatorsError,
-  } = useQuery<CreatorDTO[]>({
+  } = useQuery<PaginatedResponse<CreatorDTO>>({
     queryKey: ["me", "creators"],
     queryFn: async () => {
       const response = await fetch("/api/me/creators");
@@ -63,6 +64,9 @@ export function useProfilePreferences() {
       return response.json();
     },
   });
+
+  // Extract data from paginated response
+  const userCreators = userCreatorsResponse?.data || [];
 
   // Update user platforms mutation with optimistic updates
   const updatePlatformsMutation = useMutation({
@@ -95,9 +99,7 @@ export function useProfilePreferences() {
 
       // Optimistically update to the new value
       const allPlatformsData = queryClient.getQueryData<PlatformDTO[]>(["platforms"]) || [];
-      const optimisticPlatforms = allPlatformsData.filter((p) =>
-        newPlatformIds.includes(p.id)
-      );
+      const optimisticPlatforms = allPlatformsData.filter((p) => newPlatformIds.includes(p.id));
       queryClient.setQueryData(["me", "platforms"], optimisticPlatforms);
 
       return { previousPlatforms };
@@ -149,18 +151,20 @@ export function useProfilePreferences() {
     onMutate: async (creatorId) => {
       await queryClient.cancelQueries({ queryKey: ["me", "creators"] });
 
-      const previousCreators = queryClient.getQueryData<CreatorDTO[]>(["me", "creators"]);
+      const previousResponse = queryClient.getQueryData<PaginatedResponse<CreatorDTO>>(["me", "creators"]);
 
       // Find creator from search results or cache
       const searchResults = queryClient.getQueryData<CreatorDTO[]>(["creators", "search"]);
       const creator = searchResults?.find((c) => c.id === creatorId);
 
-      if (creator) {
-        const currentCreators = previousCreators || [];
-        queryClient.setQueryData(["me", "creators"], [...currentCreators, creator]);
+      if (creator && previousResponse) {
+        queryClient.setQueryData<PaginatedResponse<CreatorDTO>>(["me", "creators"], {
+          data: [...previousResponse.data, creator],
+          next_cursor: previousResponse.next_cursor,
+        });
       }
 
-      return { previousCreators };
+      return { previousResponse };
     },
     onError: (error, _variables, context) => {
       if (error instanceof Error && error.message === "CONFLICT") {
@@ -168,8 +172,8 @@ export function useProfilePreferences() {
         return;
       }
 
-      if (context?.previousCreators) {
-        queryClient.setQueryData(["me", "creators"], context.previousCreators);
+      if (context?.previousResponse) {
+        queryClient.setQueryData(["me", "creators"], context.previousResponse);
       }
       toast.error(error instanceof Error ? error.message : "Nie udało się dodać twórcy");
     },
@@ -200,19 +204,22 @@ export function useProfilePreferences() {
     onMutate: async (creatorId) => {
       await queryClient.cancelQueries({ queryKey: ["me", "creators"] });
 
-      const previousCreators = queryClient.getQueryData<CreatorDTO[]>(["me", "creators"]);
+      const previousResponse = queryClient.getQueryData<PaginatedResponse<CreatorDTO>>(["me", "creators"]);
 
       // Optimistically remove creator
-      if (previousCreators) {
-        const updatedCreators = previousCreators.filter((c) => c.id !== creatorId);
-        queryClient.setQueryData(["me", "creators"], updatedCreators);
+      if (previousResponse) {
+        const updatedData = previousResponse.data.filter((c) => c.id !== creatorId);
+        queryClient.setQueryData<PaginatedResponse<CreatorDTO>>(["me", "creators"], {
+          data: updatedData,
+          next_cursor: previousResponse.next_cursor,
+        });
       }
 
-      return { previousCreators };
+      return { previousResponse };
     },
     onError: (error, _variables, context) => {
-      if (context?.previousCreators) {
-        queryClient.setQueryData(["me", "creators"], context.previousCreators);
+      if (context?.previousResponse) {
+        queryClient.setQueryData(["me", "creators"], context.previousResponse);
       }
       toast.error(error instanceof Error ? error.message : "Nie udało się usunąć twórcy");
     },
@@ -251,4 +258,3 @@ export function useProfilePreferences() {
     isRemovingCreator: removeCreatorMutation.isPending,
   };
 }
-
