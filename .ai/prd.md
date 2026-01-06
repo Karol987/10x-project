@@ -86,10 +86,11 @@ Tytuł: Logowanie do aplikacji
 Opis: Jako zarejestrowany użytkownik, chcę móc zalogować się na moje konto, aby zobaczyć swoje rekomendacje i zarządzać profilem.
 Kryteria akceptacji:
 
-1. Formularz logowania wymaga podania e-maila i hasła.
-2. Po poprawnym wprowadzeniu danych jestem przekierowany na ekran główny.
-3. Błędne dane powodują wyświetlenie komunikatu "Nieprawidłowy login lub hasło".
-4. Sesja użytkownika jest utrzymywana bezpiecznie do momentu wylogowania.
+1. Użytkownik może logować się do systemu poprzez przycisk w prawym górnym rogu.
+2. Formularz logowania wymaga podania e-maila i hasła.
+3. Po poprawnym wprowadzeniu danych jestem przekierowany na ekran główny.
+4. Błędne dane powodują wyświetlenie komunikatu "Nieprawidłowy login lub hasło".
+5. Sesja użytkownika jest utrzymywana bezpiecznie do momentu wylogowania.
 
 ID: US-003
 Tytuł: Onboarding - Krok 1: Wybór platform VOD
@@ -99,6 +100,7 @@ Kryteria akceptacji:
 1. Ekran wyświetla listę dostępnych platform (np. Netflix, HBO, Disney+).
 2. Przycisk "Dalej" jest nieaktywny do momentu zaznaczenia min. 1 platformy.
 3. Wybór jest zapisywany w bazie danych przypisanej do mojego konta.
+4. Funkcjonalność Onboardingu nie jest dostępna bez logowania się do systemu (US-002)
 
 ID: US-004
 Tytuł: Onboarding - Krok 2: Wybór ulubionych twórców
@@ -109,6 +111,7 @@ Kryteria akceptacji:
 2. Wynik wyszukiwania zawiera: imię, nazwisko, rolę (np. Reżyser) i rok urodzenia.
 3. Przycisk "Zakończ" jest nieaktywny, dopóki lista ulubionych zawiera mniej niż 3 osoby.
 4. Po dodaniu 3. twórcy i kliknięciu "Zakończ", jestem przenoszony na ekran główny.
+5. Funkcjonalność Onboardingu nie jest dostępna bez logowania się do systemu (US-002)
 
 ID: US-005
 Tytuł: Przeglądanie rekomendacji (Ekran główny)
@@ -120,6 +123,7 @@ Kryteria akceptacji:
 3. Lista posortowana jest malejąco wg daty premiery.
 4. Każdy element listy zawiera : Plakat/zdjęcie, Tytuł, Rok, Gatunek, Opis, Twórców, Dostępne Platformy.
 5. Mechanizm "infinite scroll" doładowuje kolejne pozycje po przewinięciu (do max 50).
+6. Funkcjonalność 'Przeglądanie rekomendacji' Onboardingu nie jest dostępna bez logowania się do systemu (US-002)
 
 ID: US-006
 Tytuł: Oznaczanie tytułu jako obejrzany
@@ -130,6 +134,7 @@ Kryteria akceptacji:
 2. Kliknięcie usuwa element z listy rekomendacji bez konieczności odświeżania strony.
 3. Tytuł zostaje zapisany w historii użytkownika.
 4. Dla seriali akcja ta oznacza obejrzenie całej produkcji.
+5. Funkcjonalność 'Oznaczanie tytułu jako obejrzany' nie jest dostępna bez logowania się do systemu (US-002)
 
 ID: US-007
 Tytuł: Edycja preferencji (Profil)
@@ -140,6 +145,7 @@ Kryteria akceptacji:
 2. Sekcja "Profil" pozwala na wyszukiwanie i usuwanie twórców.
 3. Zmiany są zapisywane natychmiastowo.
 4. Powrót na ekran główny skutkuje przeładowaniem listy rekomendacji wg nowych kryteriów.
+5. Funkcjonalność 'Edycja preferencji' nie jest dostępna bez logowania się do systemu (US-002)
 
 ID: US-008
 Tytuł: Przeglądanie historii
@@ -149,6 +155,7 @@ Kryteria akceptacji:
 1. W profilu dostępna jest zakładka "Obejrzane".
 2. Lista zawiera tytuły i lata produkcji filmów/seriali, które oznaczyłem w US-006.
 3. Lista jest posortowana od ostatnio dodanych.
+4. Funkcjonalność 'Przeglądanie historii' nie jest dostępna bez logowania się do systemu (US-002)
 
 ID: US-009
 Tytuł: Usunięcie konta
@@ -159,6 +166,7 @@ Kryteria akceptacji:
 2. Wymagane dodatkowe potwierdzenie w oknie dialogowym.
 3. Usunięcie konta kasuje bezpowrotnie dane osobowe, preferencje i historię.
 4. Następuje wylogowanie i przekierowanie na stronę startową.
+5. Funkcjonalność 'Usunięcie konta' nie jest dostępna bez logowania się do systemu (US-002)
 
 ID: US-010
 Tytuł: Obsługa braku rekomendacji
@@ -167,6 +175,7 @@ Kryteria akceptacji:
 
 1. Wyświetlenie komunikatu: "Nie znaleziono rekomendacji. Spróbuj dodać więcej twórców lub platform.".
 2. Wyświetlenie przycisku/linku kierującego bezpośrednio do edycji profilu.
+3. Funkcjonalność 'Obsługa braku rekomendacji' nie jest dostępna bez logowania się do systemu (US-002)
 
 ID: US-011
 Tytuł: Resetowanie hasła
@@ -183,7 +192,7 @@ Tytuł: Bezpieczne wylogowanie
 Opis: Jako użytkownik, chcę mieć możliwość wylogowania się, aby nikt inny nie miał dostępu do mojego konta na tym urządzeniu.
 Kryteria akceptacji:
 
-1. Przycisk "Wyloguj" jest dostępny w widoku profilu lub w nagłówku aplikacji.
+1. Użytkownik może się wylogować z systemu poprzez przycisk w prawym górnym rogu w głównym @Layout.astro.
 2. Kliknięcie kończy sesję użytkownika.
 3. Użytkownik jest przekierowywany na ekran logowania/rejestracji.
 4. Próba powrotu "wstecz" w przeglądarce nie daje dostępu do zasobów zalogowanego użytkownika.
@@ -196,6 +205,19 @@ Kryteria akceptacji:
 1. Jeśli zewnętrzne API nie odpowiada lub zwraca błąd 5xx, aplikacja nie ulega awarii (crash).
 2. Wyświetlany jest komunikat: "Wystąpił problem z pobraniem danych. Spróbuj ponownie później."
 3. Dostępna jest opcja ręcznego odświeżenia widoku.
+
+ID: US-014: Bezpieczny dostęp i uwierzytelnianie
+Tytuł: Bezpieczny dostęp
+Opis: Jako użytkownik chcę mieć możliwość rejestracji i logowania się do systemu w sposób zapewniający bezpieczeństwo moich danych.
+Kryteria akceptacji:
+
+1. Logowanie i rejestracja odbywają się na dedykowanych stronach.
+2. Logowanie wymaga podania adresu email i hasła.
+3. Rejestracja wymaga podania adresu email, hasła.
+4. Użytkownik NIE MOŻE korzystać z funkcji systemu bez logowania się do systemu: US-003, US-004, US-005, US-006 US-007, US-008, US-009, US-010, US-012.
+5. Użytkownik MOŻE korzystać z funkcji systemu bez logowania się do systemu: US-001, US-002, US-011.
+6. Nie korzystamy z zewnętrznych serwisów logowania (np. Google, GitHub).
+7. Odzyskiwanie hasła powinno być możliwe.
 
 ## 6. Metryki sukcesu
 

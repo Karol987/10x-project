@@ -1,0 +1,11 @@
+---
+import AuthLayout from "@/layouts/AuthLayout.astro";
+import { LoginForm } from "@/components/auth/LoginForm";
+
+// This page will be server-side rendered
+// In production, middleware will redirect authenticated users away from this page
+---
+
+<AuthLayout title="Logowanie - Streamly">
+  <LoginForm client:load />
+</AuthLayout>
