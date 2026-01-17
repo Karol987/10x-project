@@ -24,7 +24,10 @@ export const GET: APIRoute = async ({ locals }) => {
   try {
     // Get Supabase client from middleware
     const supabase = locals.supabase;
-    const userId = DEFAULT_USER_ID; // TODO: Replace with actual user from auth when middleware is ready
+    
+    // For development: use DEFAULT_USER_ID
+    // In production: use authenticated user from locals
+    const userId = locals.user?.id || DEFAULT_USER_ID;
 
     // TODO: Add authentication check when middleware is updated
     // const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -63,13 +66,22 @@ export const PUT: APIRoute = async ({ locals, request }) => {
   try {
     // Get Supabase client from middleware
     const supabase = locals.supabase;
-    const userId = DEFAULT_USER_ID; // TODO: Replace with actual user from auth when middleware is ready
-
-    // TODO: Add authentication check when middleware is updated
-    // const { data: { user }, error: authError } = await supabase.auth.getUser();
-    // if (authError || !user) {
-    //   return errorResponse("Unauthorized", 401, "Unauthorized Access");
-    // }
+    
+    // Check authentication
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    console.log('DEBUG: Auth check', { 
+      hasUser: !!user, 
+      userId: user?.id,
+      localsUserId: locals.user?.id,
+      authError: authError?.message 
+    });
+    
+    if (authError || !user) {
+      return errorResponse("Unauthorized", 401, "Unauthorized Access");
+    }
+    
+    const userId = user.id;
 
     // Parse request body
     let body: unknown;

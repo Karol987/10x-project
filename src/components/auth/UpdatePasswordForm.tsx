@@ -119,7 +119,7 @@ export function UpdatePasswordForm({ onSubmit }: UpdatePasswordFormProps) {
         </CardHeader>
         <CardFooter>
           <Button className="w-full" asChild>
-            <a href="/login">Przejdź do logowania</a>
+            <a href="/auth/login">Przejdź do logowania</a>
           </Button>
         </CardFooter>
       </Card>

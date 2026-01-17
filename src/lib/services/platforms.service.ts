@@ -102,27 +102,34 @@ export class PlatformsService {
    * @throws Error if database operation fails (including FK constraint violations)
    */
   async replaceUserPlatforms(userId: UUID, platformIds: UUID[]): Promise<PlatformDTO[]> {
+    console.log('DEBUG: replaceUserPlatforms', { userId, platformIds });
+    
     // Step 1: Delete all existing user platforms
     const { error: deleteError } = await this.supabase.from("user_platforms").delete().eq("user_id", userId);
 
     if (deleteError) {
+      console.error('DEBUG: Delete error', deleteError);
       throw new Error(`Failed to delete existing user platforms: ${deleteError.message}`);
     }
 
-    // Step 2: Insert new platform subscriptions
-    const insertData = platformIds.map((platformId) => ({
-      user_id: userId,
-      platform_id: platformId,
-    }));
+    // Step 2: Insert new platform subscriptions (skip if empty array)
+    if (platformIds.length > 0) {
+      const insertData = platformIds.map((platformId) => ({
+        user_id: userId,
+        platform_id: platformId,
+      }));
 
-    const { error: insertError } = await this.supabase.from("user_platforms").insert(insertData);
+      console.log('DEBUG: Inserting data', insertData);
+      const { error: insertError } = await this.supabase.from("user_platforms").insert(insertData);
 
-    if (insertError) {
-      // FK constraint violation means invalid platform ID was provided
-      if (insertError.code === "23503") {
-        throw new Error("One or more platform IDs are invalid");
+      if (insertError) {
+        console.error('DEBUG: Insert error', insertError);
+        // FK constraint violation means invalid platform ID was provided
+        if (insertError.code === "23503") {
+          throw new Error("One or more platform IDs are invalid");
+        }
+        throw new Error(`Failed to insert user platforms: ${insertError.message}`);
       }
-      throw new Error(`Failed to insert user platforms: ${insertError.message}`);
     }
 
     // Step 3: Fetch and return the updated list

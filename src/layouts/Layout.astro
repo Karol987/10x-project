@@ -1,11 +1,16 @@
 ---
 import "../styles/global.css";
+import { UserMenu } from "../components/layout/UserMenu";
 
 interface Props {
   title?: string;
+  showHeader?: boolean;
 }
 
-const { title = "10x Astro Starter" } = Astro.props;
+const { title = "10x Astro Starter", showHeader = true } = Astro.props;
+
+// Get user from locals (set by middleware)
+const user = Astro.locals.user;
 ---
 
 <!doctype html>
@@ -16,8 +21,47 @@ const { title = "10x Astro Starter" } = Astro.props;
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    <script is:inline>
+      // Initialize theme before page renders to prevent flash
+      (function() {
+        const storedTheme = localStorage.getItem("theme");
+        if (storedTheme === "dark") {
+          document.documentElement.classList.add("dark");
+        } else if (storedTheme === "light") {
+          document.documentElement.classList.remove("dark");
+        } else {
+          // Check system preference if no stored theme
+          const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          if (prefersDark) {
+            document.documentElement.classList.add("dark");
+          }
+        }
+      })();
+    </script>
   </head>
   <body>
+    {
+      showHeader && user && (
+        <header class="border-b bg-background">
+          <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-6">
+              <a href="/" class="text-xl font-bold hover:text-primary transition-colors">
+                10x App
+              </a>
+              <nav class="hidden md:flex items-center gap-4">
+                <a href="/" class="text-sm hover:text-primary transition-colors">
+                  Home
+                </a>
+                <a href="/profile" class="text-sm hover:text-primary transition-colors">
+                  Profil
+                </a>
+              </nav>
+            </div>
+            <UserMenu client:load userEmail={user.email} />
+          </div>
+        </header>
+      )
+    }
     <slot />
   </body>
 </html>

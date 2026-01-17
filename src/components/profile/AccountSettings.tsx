@@ -45,7 +45,7 @@ export function AccountSettings({ userEmail = "user@example.com" }: AccountSetti
             </div>
             <div className="pt-2">
               <Button variant="outline" size="sm" asChild>
-                <a href="/forgot-password">
+                <a href="/auth/forgot-password">
                   <Shield />
                   Zmień hasło
                 </a>

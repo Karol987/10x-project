@@ -9,9 +9,25 @@ import { cn } from "@/lib/utils";
 interface RegisterFormProps {
   /**
    * Optional callback for handling form submission
-   * In production, this would call the API endpoint
+   * By default, submits to /api/auth/register
    */
   onSubmit?: (email: string, password: string) => Promise<void>;
+}
+
+interface RegisterResponse {
+  success?: boolean;
+  user?: {
+    id: string;
+    email: string;
+  };
+  requiresConfirmation?: boolean;
+  message?: string;
+  error?: string;
+  fields?: {
+    email?: string[];
+    password?: string[];
+    confirmPassword?: string[];
+  };
 }
 
 /**
@@ -29,6 +45,7 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
     general?: string;
   }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const emailId = useId();
   const passwordId = useId();
@@ -81,8 +98,9 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Clear previous errors
+    // Clear previous errors and success messages
     setErrors({});
+    setSuccessMessage(null);
 
     // Validate all fields
     const emailError = validateEmail(email);
@@ -104,13 +122,57 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
       if (onSubmit) {
         await onSubmit(email, password);
       } else {
-        // Mock API call for demonstration
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        console.log("Registration attempt:", { email, password });
+        // Call the register API endpoint
+        const response = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password, confirmPassword }),
+        });
+
+        const data: RegisterResponse = await response.json();
+
+        if (!response.ok) {
+          // Handle validation errors (400)
+          if (response.status === 400 && data.fields) {
+            setErrors({
+              email: data.fields.email?.[0],
+              password: data.fields.password?.[0],
+              confirmPassword: data.fields.confirmPassword?.[0],
+              general: data.error,
+            });
+            return;
+          }
+
+          // Handle other errors
+          setErrors({
+            general: data.error || "Nie udało się utworzyć konta",
+          });
+          return;
+        }
+
+        // Success - check if email confirmation is required
+        if (data.requiresConfirmation) {
+          // Show success message about email confirmation
+          setSuccessMessage(
+            data.message ||
+              "Konto zostało utworzone. Sprawdź swoją skrzynkę pocztową i kliknij w link potwierdzający, aby aktywować konto.",
+          );
+          // Clear form fields
+          setEmail("");
+          setPassword("");
+          setConfirmPassword("");
+        } else {
+          // Auto-login successful - redirect to home page
+          window.location.href = "/home";
+        }
       }
     } catch (error) {
+      console.error("Registration error:", error);
       setErrors({
-        general: "Użytkownik o tym adresie email już istnieje",
+        general:
+          "Wystąpił błąd podczas rejestracji. Sprawdź połączenie internetowe i spróbuj ponownie.",
       });
     } finally {
       setIsSubmitting(false);
@@ -125,6 +187,23 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
+          {/* Success message */}
+          {successMessage && (
+            <div
+              className={cn(
+                "p-3 rounded-lg bg-green-50 border border-green-200",
+                "dark:bg-green-950/20 dark:border-green-900/50"
+              )}
+              role="status"
+              aria-live="polite"
+            >
+              <div className="flex items-start gap-2">
+                <Check className="size-4 text-green-600 dark:text-green-500 shrink-0 mt-0.5" aria-hidden="true" />
+                <p className="text-sm text-green-800 dark:text-green-300">{successMessage}</p>
+              </div>
+            </div>
+          )}
+
           {/* General error message */}
           {errors.general && (
             <div
@@ -240,7 +319,7 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
           <p className="text-sm text-muted-foreground text-center">
             Masz już konto?{" "}
             <a
-              href="/login"
+              href="/auth/login"
               className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-sm"
             >
               Zaloguj się

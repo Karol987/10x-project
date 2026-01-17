@@ -95,7 +95,7 @@ export function ForgotPasswordForm({ onSubmit }: ForgotPasswordFormProps) {
         </CardContent>
         <CardFooter>
           <Button variant="outline" className="w-full" asChild>
-            <a href="/login">
+            <a href="/auth/login">
               <ArrowLeft />
               Wróć do logowania
             </a>
@@ -168,7 +168,7 @@ export function ForgotPasswordForm({ onSubmit }: ForgotPasswordFormProps) {
           </Button>
 
           <Button variant="ghost" className="w-full" asChild>
-            <a href="/login">
+            <a href="/auth/login">
               <ArrowLeft />
               Wróć do logowania
             </a>

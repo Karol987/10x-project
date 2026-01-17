@@ -9,9 +9,22 @@ import { cn } from "@/lib/utils";
 interface LoginFormProps {
   /**
    * Optional callback for handling form submission
-   * In production, this would call the API endpoint
+   * By default, submits to /api/auth/login
    */
   onSubmit?: (email: string, password: string) => Promise<void>;
+}
+
+interface LoginResponse {
+  success?: boolean;
+  user?: {
+    id: string;
+    email: string;
+  };
+  error?: string;
+  fields?: {
+    email?: string[];
+    password?: string[];
+  };
 }
 
 /**
@@ -69,13 +82,42 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
       if (onSubmit) {
         await onSubmit(email, password);
       } else {
-        // Mock API call for demonstration
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        console.log("Login attempt:", { email, password });
+        // Call the login API endpoint
+        const response = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const data: LoginResponse = await response.json();
+
+        if (!response.ok) {
+          // Handle validation errors (400)
+          if (response.status === 400 && data.fields) {
+            setErrors({
+              email: data.fields.email?.[0],
+              password: data.fields.password?.[0],
+              general: data.error,
+            });
+            return;
+          }
+
+          // Handle authentication errors (401) or other errors
+          setErrors({
+            general: data.error || "Nieprawidłowy email lub hasło",
+          });
+          return;
+        }
+
+        // Success - redirect to home page
+        window.location.href = "/home";
       }
     } catch (error) {
+      console.error("Login error:", error);
       setErrors({
-        general: "Nieprawidłowy login lub hasło",
+        general: "Wystąpił błąd podczas logowania. Sprawdź połączenie internetowe i spróbuj ponownie.",
       });
     } finally {
       setIsSubmitting(false);
@@ -133,7 +175,7 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
             <div className="flex items-center justify-between">
               <Label htmlFor={passwordId}>Hasło</Label>
               <a
-                href="/forgot-password"
+                href="/auth/forgot-password"
                 className="text-sm text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-sm"
               >
                 Zapomniałeś hasła?
@@ -173,7 +215,7 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
           <p className="text-sm text-muted-foreground text-center">
             Nie masz konta?{" "}
             <a
-              href="/register"
+              href="/auth/register"
               className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-sm"
             >
               Zarejestruj się
