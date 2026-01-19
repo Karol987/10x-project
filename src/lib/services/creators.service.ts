@@ -41,6 +41,16 @@ export class FavoriteCreatorNotFoundError extends Error {
 }
 
 /**
+ * Interface for upserting a creator from external API
+ */
+export interface UpsertCreatorData {
+  external_api_id: string;
+  name: string;
+  creator_role: CreatorRole;
+  avatar_url: string | null;
+}
+
+/**
  * Creators Service
  * Handles read operations for the public creators dictionary
  */
@@ -127,7 +137,7 @@ export class CreatorsService {
    * Get a single creator by ID
    *
    * @param id - Creator's UUID
-   * @returns CreatorDTO
+   * @returns CreatorDTO with external ID format
    * @throws CreatorNotFoundError if creator doesn't exist
    * @throws Error for other database errors
    */
@@ -135,7 +145,7 @@ export class CreatorsService {
     // Execute query
     const { data, error } = await this.supabase
       .from("creators")
-      .select("id, name, creator_role, avatar_url")
+      .select("id, external_api_id, name, creator_role, avatar_url")
       .eq("id", id)
       .single();
 
@@ -154,9 +164,9 @@ export class CreatorsService {
       throw new CreatorNotFoundError();
     }
 
-    // Return the DTO
+    // Return the DTO with external ID format
     return {
-      id: data.id,
+      id: `tmdb-${data.external_api_id}`,
       name: data.name,
       creator_role: data.creator_role,
       avatar_url: data.avatar_url,
@@ -180,7 +190,7 @@ export class CreatorsService {
     // Build query: JOIN user_creators with creators table
     let queryBuilder = this.supabase
       .from("user_creators")
-      .select("creator_id, creators(id, name, creator_role, avatar_url)")
+      .select("creator_id, creators(id, external_api_id, name, creator_role, avatar_url)")
       .eq("user_id", userId)
       .order("created_at", { ascending: true });
 
@@ -221,12 +231,14 @@ export class CreatorsService {
       .map((item) => {
         const creator = item.creators as {
           id: string;
+          external_api_id: string;
           name: string;
           creator_role: CreatorRole;
           avatar_url: string | null;
         };
         return {
-          id: creator.id,
+          // Return external ID format for consistency with search results
+          id: `tmdb-${creator.external_api_id}`,
           name: creator.name,
           creator_role: creator.creator_role,
           avatar_url: creator.avatar_url,
@@ -240,7 +252,56 @@ export class CreatorsService {
   }
 
   /**
-   * Add a creator to user's favorites
+   * Upsert a creator from external API data
+   *
+   * Inserts or updates a creator in the database using data from external API.
+   * Uses ON CONFLICT to handle duplicates based on (external_api_id, creator_role).
+   *
+   * @param data - Creator data from external API
+   * @returns The upserted creator's UUID
+   * @throws Error for database errors
+   */
+  async upsertCreatorFromExternalApi(data: UpsertCreatorData): Promise<UUID> {
+    const { external_api_id, name, creator_role, avatar_url } = data;
+
+    // Upsert the creator (insert or update if exists)
+    const { data: upsertedData, error } = await this.supabase
+      .from("creators")
+      .upsert(
+        {
+          external_api_id,
+          name,
+          creator_role,
+          avatar_url,
+          last_synced_at: new Date().toISOString(),
+        },
+        {
+          onConflict: "external_api_id,creator_role",
+          ignoreDuplicates: false, // Update if exists
+        }
+      )
+      .select("id")
+      .single();
+
+    // Handle database errors
+    if (error) {
+      throw new Error(`Failed to upsert creator: ${error.message}`);
+    }
+
+    // Validate data was returned
+    if (!upsertedData) {
+      throw new Error("Failed to upsert creator: no data returned");
+    }
+
+    return upsertedData.id;
+  }
+
+  /**
+   * Add a creator to user's favorites (with external API integration)
+   *
+   * This method supports two workflows:
+   * 1. Adding an existing creator by UUID (legacy)
+   * 2. Adding a creator from external API data (new workflow)
    *
    * Creates a new entry in the user_creators junction table.
    * Handles duplicate entries by catching the unique constraint violation.
@@ -277,17 +338,103 @@ export class CreatorsService {
   }
 
   /**
+   * Add a creator to user's favorites from external API data
+   *
+   * This method handles the complete workflow:
+   * 1. Upsert the creator into the creators table (from external API data)
+   * 2. Add the creator to user's favorites
+   *
+   * @param userId - User's UUID from authenticated session
+   * @param creatorData - Creator data from external API (must include id in format "tmdb-{id}")
+   * @returns The creator that was added to favorites
+   * @throws CreatorAlreadyFavoriteError if creator is already in favorites (409)
+   * @throws Error for other database errors
+   */
+  async addFavoriteFromExternalApi(userId: UUID, creatorData: CreatorDTO): Promise<CreatorDTO> {
+    // Extract TMDb ID from the external ID format "tmdb-{id}"
+    const externalApiId = creatorData.id.replace("tmdb-", "");
+
+    // Upsert the creator into the database
+    const creatorId = await this.upsertCreatorFromExternalApi({
+      external_api_id: externalApiId,
+      name: creatorData.name,
+      creator_role: creatorData.creator_role,
+      avatar_url: creatorData.avatar_url,
+    });
+
+    // Check if already in favorites
+    const { data: existingFavorite } = await this.supabase
+      .from("user_creators")
+      .select("creator_id")
+      .eq("user_id", userId)
+      .eq("creator_id", creatorId)
+      .single();
+
+    if (existingFavorite) {
+      throw new CreatorAlreadyFavoriteError();
+    }
+
+    // Insert into user_creators junction table
+    const { error } = await this.supabase.from("user_creators").insert({
+      user_id: userId,
+      creator_id: creatorId,
+    });
+
+    // Handle database errors
+    if (error) {
+      // Check for unique constraint violation (23505 = duplicate key)
+      if (error.code === "23505") {
+        throw new CreatorAlreadyFavoriteError();
+      }
+
+      throw new Error(`Failed to add favorite creator: ${error.message}`);
+    }
+
+    // Return the creator DTO with the external ID format (for consistency with search results)
+    return {
+      ...creatorData,
+      // Keep the original external ID format
+      id: creatorData.id,
+    };
+  }
+
+  /**
    * Remove a creator from user's favorites
    *
    * Deletes the entry from the user_creators junction table.
    * Verifies that the user owns the favorite before deletion.
+   * Supports both UUID and external ID formats.
    *
    * @param userId - User's UUID from authenticated session
-   * @param creatorId - Creator's UUID to remove from favorites
+   * @param creatorIdOrExternalId - Creator's UUID or external ID (format: "tmdb-{id}")
    * @throws FavoriteCreatorNotFoundError if favorite doesn't exist or doesn't belong to user (404)
    * @throws Error for other database errors
    */
-  async removeFavorite(userId: UUID, creatorId: UUID): Promise<void> {
+  async removeFavorite(userId: UUID, creatorIdOrExternalId: string): Promise<void> {
+    let creatorId: UUID;
+
+    // Check if ID is external ID format (tmdb-{id})
+    if (creatorIdOrExternalId.startsWith("tmdb-")) {
+      // Extract external API ID
+      const externalApiId = creatorIdOrExternalId.replace("tmdb-", "");
+
+      // Find creator UUID by external_api_id
+      const { data: creator, error: findError } = await this.supabase
+        .from("creators")
+        .select("id")
+        .eq("external_api_id", externalApiId)
+        .single();
+
+      if (findError || !creator) {
+        throw new FavoriteCreatorNotFoundError();
+      }
+
+      creatorId = creator.id;
+    } else {
+      // ID is already a UUID
+      creatorId = creatorIdOrExternalId;
+    }
+
     // Delete from user_creators junction table
     const { error, count } = await this.supabase
       .from("user_creators")

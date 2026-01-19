@@ -54,8 +54,8 @@ export const RecommendationCard = memo(function RecommendationCard({
           <div className="space-y-2">
             <p className="text-xs font-medium text-muted-foreground">Dostępne na:</p>
             <div className="flex flex-wrap gap-2">
-              {item.platforms.map((platform) => (
-                <Badge key={platform} variant="secondary" className="capitalize">
+              {item.platforms.map((platform, index) => (
+                <Badge key={`${platform}-${index}`} variant="secondary" className="capitalize">
                   {platform}
                 </Badge>
               ))}
@@ -68,8 +68,8 @@ export const RecommendationCard = memo(function RecommendationCard({
           <div className="space-y-2">
             <p className="text-xs font-medium text-muted-foreground">Twórcy:</p>
             <div className="flex flex-wrap gap-2">
-              {item.creators.map((creator) => (
-                <Badge key={creator.id} variant={creator.is_favorite ? "default" : "outline"} className="gap-1.5">
+              {item.creators.map((creator, index) => (
+                <Badge key={`${item.id}-${creator.id}-${index}`} variant={creator.is_favorite ? "default" : "outline"} className="gap-1.5">
                   <span>{creator.name}</span>
                   {creator.creator_role && (
                     <span className="text-[10px] opacity-70">

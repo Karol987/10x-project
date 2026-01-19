@@ -7,7 +7,9 @@ import { ThemeToggle } from "./ThemeToggle";
 import { PlatformGrid } from "./PlatformGrid";
 import { CreatorSearch } from "./CreatorSearch";
 import { CreatorList } from "./CreatorList";
-import { Loader2 } from "lucide-react";
+import { Loader2, History } from "lucide-react";
+import { Button } from "../ui/button";
+import type { CreatorDTO } from "@/types";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -49,8 +51,8 @@ function ProfileContent() {
     updatePlatforms(newPlatformIds);
   };
 
-  const handleCreatorAdd = (creatorId: string) => {
-    addCreator(creatorId);
+  const handleCreatorAdd = (creator: CreatorDTO) => {
+    addCreator(creator);
   };
 
   const handleCreatorRemove = (creatorId: string) => {
@@ -148,6 +150,27 @@ function ProfileContent() {
           isLoading={isLoadingCreators}
           removingCreatorId={removingCreatorId || undefined}
         />
+      </section>
+
+      {/* Separator */}
+      <div className="border-t border-border" />
+
+      {/* Watched History Section */}
+      <section className="space-y-4">
+        <div className="space-y-1">
+          <h2 className="text-xl font-semibold">Obejrzane</h2>
+          <p className="text-sm text-muted-foreground">
+            Przeglądaj filmy i seriale, które oznaczyłeś jako obejrzane
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          className="w-full sm:w-auto"
+          onClick={() => (window.location.href = "/history")}
+        >
+          <History className="h-4 w-4 mr-2" />
+          Zobacz historię obejrzanych
+        </Button>
       </section>
     </div>
   );

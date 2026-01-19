@@ -93,12 +93,16 @@ export async function updatePlatforms(supabase: SupabaseClient, platformIds: UUI
 /**
  * Updates user's selected creators and completes onboarding.
  * Replaces all existing creator selections with the new ones.
+ * Supports both UUID strings (existing creators) and full creator objects (from external API).
  *
  * @param supabase - Authenticated Supabase client
- * @param creatorIds - Array of creator UUIDs to associate with user
+ * @param creators - Array of creator UUIDs or full creator objects from external API
  * @throws Error if user not authenticated or database operation fails
  */
-export async function updateCreators(supabase: SupabaseClient, creatorIds: UUID[]): Promise<void> {
+export async function updateCreators(
+  supabase: SupabaseClient,
+  creators: (UUID | { id: string; name: string; creator_role: string; avatar_url: string | null })[]
+): Promise<void> {
   // Get authenticated user
   const {
     data: { user },
@@ -109,14 +113,53 @@ export async function updateCreators(supabase: SupabaseClient, creatorIds: UUID[
     throw new Error("Unauthorized: User not authenticated");
   }
 
-  // Step 1: Delete all existing user_creators entries
+  // Step 1: Process all creators and get their UUIDs
+  // For external API creators, we need to upsert them first
+  const creatorIds: UUID[] = [];
+
+  for (const creator of creators) {
+    if (typeof creator === "string") {
+      // It's a UUID string - use it directly
+      creatorIds.push(creator);
+    } else {
+      // It's a full creator object from external API - upsert it first
+      const externalApiId = creator.id.replace("tmdb-", "");
+
+      // Upsert the creator into the database
+      const { data: upsertedData, error: upsertError } = await supabase
+        .from("creators")
+        .upsert(
+          {
+            external_api_id: externalApiId,
+            name: creator.name,
+            creator_role: creator.creator_role,
+            avatar_url: creator.avatar_url,
+            last_synced_at: new Date().toISOString(),
+          },
+          {
+            onConflict: "external_api_id,creator_role",
+            ignoreDuplicates: false, // Update if exists
+          }
+        )
+        .select("id")
+        .single();
+
+      if (upsertError || !upsertedData) {
+        throw new Error(`Failed to upsert creator ${creator.name}: ${upsertError?.message || "no data returned"}`);
+      }
+
+      creatorIds.push(upsertedData.id);
+    }
+  }
+
+  // Step 2: Delete all existing user_creators entries
   const { error: deleteError } = await supabase.from("user_creators").delete().eq("user_id", user.id);
 
   if (deleteError) {
     throw new Error(`Failed to delete existing creators: ${deleteError.message}`);
   }
 
-  // Step 2: Insert new creator associations
+  // Step 3: Insert new creator associations
   const creatorsToInsert = creatorIds.map((creatorId) => ({
     user_id: user.id,
     creator_id: creatorId,
@@ -128,7 +171,7 @@ export async function updateCreators(supabase: SupabaseClient, creatorIds: UUID[
     throw new Error(`Failed to insert creators: ${insertError.message}`);
   }
 
-  // Step 3: Update onboarding status to 'completed'
+  // Step 4: Update onboarding status to 'completed'
   const { error: updateError } = await supabase
     .from("profiles")
     .update({ onboarding_status: "completed" })

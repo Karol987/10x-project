@@ -2,7 +2,6 @@
 
 import type { APIRoute } from "astro";
 import { z } from "zod";
-import { DEFAULT_USER_ID } from "../../db/supabase.client";
 import { errorResponse, jsonResponse } from "../../lib/utils";
 import { ProfileService } from "../../lib/services/profile.service";
 import type { ProfileDTO } from "../../types";
@@ -24,9 +23,16 @@ const profileUpdateSchema = z.object({
  */
 export const GET: APIRoute = async ({ locals }) => {
   try {
-    // Get Supabase client from middleware
+    // Get Supabase client and user from middleware
     const supabase = locals.supabase;
-    const userId = DEFAULT_USER_ID;
+    const user = locals.user;
+
+    // Check authentication
+    if (!user) {
+      return errorResponse("Unauthorized", 401, "Authentication required");
+    }
+
+    const userId = user.id;
 
     // Fetch profile using service
     const profileService = new ProfileService(supabase);
@@ -44,9 +50,16 @@ export const GET: APIRoute = async ({ locals }) => {
 
 export const PATCH: APIRoute = async ({ locals, request }) => {
   try {
-    // Get Supabase client from middleware
+    // Get Supabase client and user from middleware
     const supabase = locals.supabase;
-    const userId = DEFAULT_USER_ID;
+    const user = locals.user;
+
+    // Check authentication
+    if (!user) {
+      return errorResponse("Unauthorized", 401, "Authentication required");
+    }
+
+    const userId = user.id;
 
     // Parse and validate request body
     let body: unknown;

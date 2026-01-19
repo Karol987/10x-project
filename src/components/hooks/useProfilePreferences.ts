@@ -6,6 +6,7 @@ import type {
   CreatorDTO,
   UserPlatformsReplaceCommand,
   AddUserCreatorCommand,
+  AddUserCreatorFromExternalApiCommand,
   PaginatedResponse,
 } from "@/types";
 import { toast } from "sonner";
@@ -123,10 +124,23 @@ export function useProfilePreferences() {
 
   // Add creator mutation with optimistic updates
   const addCreatorMutation = useMutation({
-    mutationFn: async (creatorId: string) => {
-      const payload: AddUserCreatorCommand = {
-        creator_id: creatorId,
-      };
+    mutationFn: async (creator: CreatorDTO) => {
+      // Determine if ID is UUID (from database) or external ID (from TMDb API)
+      const isExternalId = creator.id.startsWith("tmdb-");
+      
+      // Prepare payload based on ID format
+      const payload: AddUserCreatorCommand | AddUserCreatorFromExternalApiCommand = isExternalId
+        ? {
+            // External API workflow - send full creator data
+            id: creator.id,
+            name: creator.name,
+            creator_role: creator.creator_role,
+            avatar_url: creator.avatar_url,
+          }
+        : {
+            // Legacy workflow - send only UUID
+            creator_id: creator.id,
+          };
 
       const response = await fetch("/api/me/creators", {
         method: "POST",
@@ -148,16 +162,12 @@ export function useProfilePreferences() {
 
       return response.json();
     },
-    onMutate: async (creatorId) => {
+    onMutate: async (creator) => {
       await queryClient.cancelQueries({ queryKey: ["me", "creators"] });
 
       const previousResponse = queryClient.getQueryData<PaginatedResponse<CreatorDTO>>(["me", "creators"]);
 
-      // Find creator from search results or cache
-      const searchResults = queryClient.getQueryData<CreatorDTO[]>(["creators", "search"]);
-      const creator = searchResults?.find((c) => c.id === creatorId);
-
-      if (creator && previousResponse) {
+      if (previousResponse) {
         queryClient.setQueryData<PaginatedResponse<CreatorDTO>>(["me", "creators"], {
           data: [...previousResponse.data, creator],
           next_cursor: previousResponse.next_cursor,

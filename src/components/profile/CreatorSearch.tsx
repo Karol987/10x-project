@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 interface CreatorSearchProps {
   excludeIds: string[];
-  onSelect: (creatorId: string) => void;
+  onSelect: (creator: CreatorDTO) => void;
 }
 
 /**
@@ -55,7 +55,7 @@ export function CreatorSearch({ excludeIds, onSelect }: CreatorSearchProps) {
 
   const handleSelect = useCallback(
     (creator: CreatorDTO) => {
-      onSelect(creator.id);
+      onSelect(creator);
       setQuery(""); // Clear search after selection
       setDebouncedQuery("");
     },

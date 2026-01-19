@@ -1,7 +1,6 @@
 // src/pages/api/recommendations.ts
 
 import type { APIRoute } from "astro";
-import { DEFAULT_USER_ID } from "../../db/supabase.client";
 import { errorResponse, jsonResponse } from "../../lib/utils";
 import { RecommendationsPaginationQuerySchema } from "../../lib/schemas/recommendations.schema";
 import { RecommendationsService } from "../../lib/services/recommendations.service";
@@ -27,20 +26,20 @@ export const prerender = false;
  * - 500: Internal Server Error - unexpected error
  */
 export const GET: APIRoute = async ({ locals, url }) => {
+  console.log('[API /recommendations] GET request received');
   try {
-    // TODO: Implement JWT authentication check when middleware is ready
-    // Currently using DEFAULT_USER_ID from supabase.client.ts
-    //
-    // const user = locals.user;
-    // if (!user) {
-    //   return errorResponse("Unauthorized", 401);
-    // }
-    // const userId = user.id;
-
-    const userId = DEFAULT_USER_ID;
-
-    // Get Supabase client from middleware
+    // Get Supabase client and user from middleware
     const supabase = locals.supabase;
+    const user = locals.user;
+
+    console.log('[API /recommendations] User authenticated:', !!user, user?.id);
+
+    // Check authentication
+    if (!user) {
+      return errorResponse("Unauthorized", 401, "Authentication required");
+    }
+
+    const userId = user.id;
     if (!supabase) {
       return errorResponse("ServerError", 500, "Supabase client not available");
     }
@@ -50,6 +49,8 @@ export const GET: APIRoute = async ({ locals, url }) => {
       cursor: url.searchParams.get("cursor") || undefined,
       limit: url.searchParams.get("limit") || undefined,
     };
+
+    console.log('[API /recommendations] Query params:', queryParams);
 
     const validationResult = RecommendationsPaginationQuerySchema.safeParse(queryParams);
 
@@ -62,13 +63,17 @@ export const GET: APIRoute = async ({ locals, url }) => {
     }
 
     const { cursor, limit } = validationResult.data;
+    console.log('[API /recommendations] Calling service with:', { userId, limit, cursor });
 
     // Fetch recommendations using service
     const recommendationsService = new RecommendationsService(supabase);
     const recommendations = await recommendationsService.get(userId, { limit, cursor });
 
+    console.log('[API /recommendations] Got recommendations:', recommendations.length);
+
     return jsonResponse<RecommendationDTO[]>(recommendations, 200);
-  } catch {
+  } catch (error) {
+    console.error('[API /recommendations] Error:', error);
     return errorResponse("ServerError", 500, "Unexpected error");
   }
 };

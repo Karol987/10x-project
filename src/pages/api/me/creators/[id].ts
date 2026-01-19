@@ -1,8 +1,7 @@
 // src/pages/api/me/creators/[id].ts
 
 import type { APIRoute } from "astro";
-import { DEFAULT_USER_ID } from "../../../../db/supabase.client";
-import { CreatorIdSchema } from "../../../../lib/schemas/creators.schema";
+import { CreatorIdOrExternalIdSchema } from "../../../../lib/schemas/creators.schema";
 import { CreatorsService, FavoriteCreatorNotFoundError } from "../../../../lib/services/creators.service";
 import { errorResponse } from "../../../../lib/utils";
 
@@ -14,7 +13,8 @@ export const prerender = false;
  * Protected endpoint that removes a creator from the authenticated user's favorites list.
  *
  * Path Parameters:
- * - id: UUID (required) - ID of the creator to remove from favorites
+ * - id: UUID or external ID (required) - ID of the creator to remove from favorites
+ *   Can be either a UUID (from database) or external ID in format "tmdb-{id}"
  *
  * Responses:
  * - 204: No Content - Creator successfully removed from favorites
@@ -27,20 +27,27 @@ export const DELETE: APIRoute = async ({ locals, params }) => {
   try {
     // Get Supabase client and user from middleware
     const supabase = locals.supabase;
-    const userId = DEFAULT_USER_ID; // TODO: Replace with actual user from auth when middleware is ready
+    const user = locals.user;
+
+    // Check authentication
+    if (!user) {
+      return errorResponse("Unauthorized", 401, "Authentication required");
+    }
+
+    const userId = user.id;
 
     // Validate path parameter with Zod
-    const validationResult = CreatorIdSchema.safeParse({ id: params.id });
+    const validationResult = CreatorIdOrExternalIdSchema.safeParse({ id: params.id });
     if (!validationResult.success) {
       return errorResponse("ValidationError", 400, "Invalid creator ID", validationResult.error.format());
     }
 
     // Extract validated creator ID
-    const { id: creatorId } = validationResult.data;
+    const { id: creatorIdOrExternalId } = validationResult.data;
 
     // Remove creator from favorites using service
     const creatorsService = new CreatorsService(supabase);
-    await creatorsService.removeFavorite(userId, creatorId);
+    await creatorsService.removeFavorite(userId, creatorIdOrExternalId);
 
     // Return 204 No Content on success
     return new Response(null, { status: 204 });

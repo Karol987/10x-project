@@ -68,8 +68,9 @@ export interface OnboardingPlatformsCommand {
 export type UserPlatformsReplaceCommand = OnboardingPlatformsCommand;
 
 // Command: PUT /onboarding/creators
+// Supports both UUID strings (existing creators) and full creator objects (from external API)
 export interface OnboardingCreatorsCommand {
-  creator_ids: UUID[];
+  creators: (UUID | AddUserCreatorFromExternalApiCommand)[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -107,9 +108,17 @@ export interface UserCreatorListItemDTO extends CreatorDTO {
   is_favorite: boolean;
 }
 
-// Command: POST /me/creators
+// Command: POST /me/creators (legacy - existing creator by UUID)
 export interface AddUserCreatorCommand {
   creator_id: UUID;
+}
+
+// Command: POST /me/creators (from external API - new creator data)
+export interface AddUserCreatorFromExternalApiCommand {
+  id: string; // External ID in format "tmdb-{id}"
+  name: string;
+  creator_role: CreatorRole;
+  avatar_url: string | null;
 }
 
 /* ------------------------------------------------------------------ */

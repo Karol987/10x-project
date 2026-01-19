@@ -1,7 +1,9 @@
 // src/lib/services/recommendations.service.ts
 
 import type { SupabaseClient } from "../../db/supabase.client";
-import type { RecommendationDTO, UUID } from "../../types";
+import type { RecommendationDTO, UUID, PlatformSlug } from "../../types";
+import { VodService } from "./vod.service";
+import { ConfigurationError } from "./vod.service.types";
 
 /**
  * Options for getting recommendations
@@ -15,11 +17,26 @@ interface GetRecommendationsOptions {
  * Recommendations Service
  * Handles fetching personalized recommendations for users
  *
- * Currently uses mock data for development.
- * Will be replaced with actual Supabase RPC call to `get_recommendations` function.
+ * Integrates with VodService to fetch recommendations based on:
+ * 1. User's favorite creators (from database)
+ * 2. User's subscribed platforms (from database)
+ * 3. VOD availability (from TMDb + MOTN APIs)
  */
 export class RecommendationsService {
-  constructor(private supabase: SupabaseClient) {}
+  private vodService: VodService | null = null;
+
+  constructor(private supabase: SupabaseClient) {
+    // Initialize VodService if API keys are configured
+    try {
+      this.vodService = new VodService(supabase);
+    } catch (error) {
+      if (error instanceof ConfigurationError) {
+        console.warn("VodService not configured - falling back to mock data");
+      } else {
+        throw error;
+      }
+    }
+  }
 
   /**
    * Get personalized recommendations for a user
@@ -36,21 +53,87 @@ export class RecommendationsService {
   async get(userId: UUID, options: GetRecommendationsOptions): Promise<RecommendationDTO[]> {
     const { limit, cursor } = options;
 
-    // TODO: Replace with actual Supabase RPC call when database function is ready
-    // const { data, error } = await this.supabase.rpc('get_recommendations', {
-    //   user_id: userId,
-    //   cursor: cursor || null,
-    //   lim: limit
-    // });
-    //
-    // if (error) {
-    //   throw error;
-    // }
-    //
-    // return data || [];
+    // If VodService is not configured, fall back to mock data
+    if (!this.vodService) {
+      console.warn("VodService not available - using mock data");
+      return this.getMockRecommendations(userId, limit, cursor);
+    }
 
-    // MOCK DATA for development
-    return this.getMockRecommendations(userId, limit, cursor);
+    try {
+      // Fetch user's favorite creators from database with JOIN to get external_api_id
+      const { data: userCreators, error: creatorsError } = await this.supabase
+        .from("user_creators")
+        .select("creators(external_api_id)")
+        .eq("user_id", userId);
+
+      console.log('[RecommendationsService] User creators query result:', { 
+        dataLength: userCreators?.length,
+        sampleData: userCreators?.slice(0, 3),
+        error: creatorsError 
+      });
+
+      if (creatorsError) {
+        console.error("Failed to fetch user creators:", creatorsError);
+        return this.getMockRecommendations(userId, limit, cursor);
+      }
+
+      // Fetch user's subscribed platforms from database
+      const { data: userPlatforms, error: platformsError } = await this.supabase
+        .from("user_platforms")
+        .select("platforms(slug)")
+        .eq("user_id", userId);
+
+      console.log('[RecommendationsService] User platforms query result:', { 
+        data: userPlatforms, 
+        error: platformsError 
+      });
+
+      if (platformsError) {
+        console.error("Failed to fetch user platforms:", platformsError);
+        return this.getMockRecommendations(userId, limit, cursor);
+      }
+
+      // Extract external_api_ids and slugs
+      const creatorExternalIds = userCreators
+        ?.map((uc) => {
+          const creator = uc.creators as { external_api_id: string } | null;
+          return creator?.external_api_id;
+        })
+        .filter((id): id is string => id !== null && id !== undefined) || [];
+      
+      const platformSlugs = userPlatforms
+        ?.map((up) => (up.platforms as { slug: string } | null)?.slug)
+        .filter((slug): slug is PlatformSlug => slug !== null && slug !== undefined) || [];
+
+      console.log('[RecommendationsService] Extracted data:', { 
+        creatorExternalIds, 
+        platformSlugs 
+      });
+
+      // Early return if user has no favorites or platforms
+      if (creatorExternalIds.length === 0 || platformSlugs.length === 0) {
+        return [];
+      }
+
+      // Fetch recommendations from VodService
+      const recommendations = await this.vodService.getRecommendations(userId, platformSlugs, creatorExternalIds);
+
+      // Apply cursor-based pagination
+      let filteredRecommendations = recommendations;
+      if (cursor) {
+        const cursorIndex = recommendations.findIndex((rec) => rec.id === cursor);
+        if (cursorIndex !== -1) {
+          filteredRecommendations = recommendations.slice(cursorIndex + 1);
+        }
+      }
+
+      // Apply limit
+      return filteredRecommendations.slice(0, limit);
+    } catch (error) {
+      console.error("Failed to fetch recommendations from VodService:", error);
+      // Fall back to mock data on error
+      return this.getMockRecommendations(userId, limit, cursor);
+    }
   }
 
   /**

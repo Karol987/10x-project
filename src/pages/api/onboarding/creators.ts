@@ -13,7 +13,7 @@ export const prerender = false;
  * Replaces all existing creator selections with the new ones.
  * Completes onboarding by setting status to 'completed'.
  *
- * @body { creator_ids: UUID[] } - Array of creator UUIDs (min: 3, max: 50)
+ * @body { creators: (UUID | CreatorObject)[] } - Array of creator UUIDs or full creator objects (min: 3, max: 50)
  * @returns 204 No Content on success
  * @returns 400 Bad Request if JSON is malformed
  * @returns 401 Unauthorized if user is not authenticated
@@ -70,7 +70,7 @@ export const PUT: APIRoute = async ({ request, locals }) => {
     }
 
     // Update creators via service
-    await updateCreators(supabase, validationResult.data.creator_ids);
+    await updateCreators(supabase, validationResult.data.creators);
 
     // Return 204 No Content on success
     return new Response(null, {

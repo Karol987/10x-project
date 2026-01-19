@@ -13,8 +13,6 @@ export const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKe
 // Export typed SupabaseClient for use across the application
 export type SupabaseClient = SupabaseClientBase<Database>;
 
-export const DEFAULT_USER_ID = "0d64eeaf-dbb0-4998-8a07-41eb37696f2a";
-
 // Cookie options for SSR authentication
 export const cookieOptions: CookieOptionsWithName = {
   path: "/",

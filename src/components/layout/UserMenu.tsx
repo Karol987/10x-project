@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { User, LogOut, Settings, ChevronDown } from "lucide-react";
+import { User, LogOut, Settings, ChevronDown, History } from "lucide-react";
 
 import { Button } from "../ui/button";
 
@@ -43,6 +43,11 @@ export const UserMenu = ({ userEmail }: UserMenuProps) => {
 
   const handleProfileClick = useCallback(() => {
     window.location.href = "/profile";
+    setIsOpen(false);
+  }, []);
+
+  const handleHistoryClick = useCallback(() => {
+    window.location.href = "/history";
     setIsOpen(false);
   }, []);
 
@@ -94,6 +99,14 @@ export const UserMenu = ({ userEmail }: UserMenuProps) => {
             >
               <Settings className="h-4 w-4" />
               <span>Ustawienia profilu</span>
+            </button>
+
+            <button
+              onClick={handleHistoryClick}
+              className="flex w-full items-center gap-2 rounded-sm px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+            >
+              <History className="h-4 w-4" />
+              <span>Historia obejrzanych</span>
             </button>
 
             <button

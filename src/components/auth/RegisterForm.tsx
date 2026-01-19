@@ -164,8 +164,8 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
           setPassword("");
           setConfirmPassword("");
         } else {
-          // Auto-login successful - redirect to home page
-          window.location.href = "/home";
+          // Auto-login successful - redirect to onboarding
+          window.location.href = "/onboarding/platforms";
         }
       }
     } catch (error) {

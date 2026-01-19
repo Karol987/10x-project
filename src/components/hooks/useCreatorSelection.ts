@@ -98,7 +98,12 @@ export function useCreatorSelection() {
 
     try {
       const command: OnboardingCreatorsCommand = {
-        creator_ids: selectedCreators.map((c) => c.id),
+        creators: selectedCreators.map((c) => ({
+          id: c.id,
+          name: c.name,
+          creator_role: c.creator_role,
+          avatar_url: c.avatar_url,
+        })),
       };
 
       const response = await fetch("/api/onboarding/creators", {
@@ -119,7 +124,7 @@ export function useCreatorSelection() {
 
       // Success - redirect to home
       setStatus("idle");
-      window.location.assign("/");
+      window.location.assign("/home");
       return true;
     } catch {
       setErrorMessage("Wystąpił problem z zapisem Twoich preferencji. Spróbuj ponownie.");

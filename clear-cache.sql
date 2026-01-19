@@ -1,0 +1,1 @@
+TRUNCATE TABLE vod_availability_cache;

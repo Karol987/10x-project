@@ -1,7 +1,6 @@
 // src/pages/api/me/watched/index.ts
 
 import type { APIRoute } from "astro";
-import { DEFAULT_USER_ID } from "../../../../db/supabase.client";
 import { WatchedItemCreateSchema, WatchedItemsPaginationSchema } from "../../../../lib/schemas/watched.schema";
 import { WatchedService, WatchedItemAlreadyExistsError } from "../../../../lib/services/watched.service";
 import { errorResponse, jsonResponse } from "../../../../lib/utils";
@@ -27,9 +26,16 @@ export const prerender = false;
  */
 export const GET: APIRoute = async ({ locals, url }) => {
   try {
-    // Get Supabase client from middleware
+    // Get Supabase client and user from middleware
     const supabase = locals.supabase;
-    const userId = DEFAULT_USER_ID; // TODO: Replace with actual user from auth when middleware is ready
+    const user = locals.user;
+
+    // Check authentication
+    if (!user) {
+      return errorResponse("Unauthorized", 401, "Authentication required");
+    }
+
+    const userId = user.id;
 
     // Parse query parameters
     const queryParams = {
@@ -81,7 +87,14 @@ export const POST: APIRoute = async ({ locals, request }) => {
   try {
     // Get Supabase client and user from middleware
     const supabase = locals.supabase;
-    const userId = DEFAULT_USER_ID; // TODO: Replace with actual user from auth when middleware is ready
+    const user = locals.user;
+
+    // Check authentication
+    if (!user) {
+      return errorResponse("Unauthorized", 401, "Authentication required");
+    }
+
+    const userId = user.id;
 
     // Parse request body
     let body: unknown;

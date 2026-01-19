@@ -1,7 +1,6 @@
 // src/pages/api/me/platforms.ts
 
 import type { APIRoute } from "astro";
-import { DEFAULT_USER_ID } from "../../../db/supabase.client";
 import { UserPlatformsReplaceCommandSchema } from "../../../lib/schemas/platforms.schema";
 import { PlatformsService } from "../../../lib/services/platforms.service";
 import { errorResponse, jsonResponse } from "../../../lib/utils";
@@ -22,18 +21,16 @@ export const prerender = false;
  */
 export const GET: APIRoute = async ({ locals }) => {
   try {
-    // Get Supabase client from middleware
+    // Get Supabase client and user from middleware
     const supabase = locals.supabase;
-    
-    // For development: use DEFAULT_USER_ID
-    // In production: use authenticated user from locals
-    const userId = locals.user?.id || DEFAULT_USER_ID;
+    const user = locals.user;
 
-    // TODO: Add authentication check when middleware is updated
-    // const { data: { user }, error: authError } = await supabase.auth.getUser();
-    // if (authError || !user) {
-    //   return errorResponse("Unauthorized", 401, "Unauthorized Access");
-    // }
+    // Check authentication
+    if (!user) {
+      return errorResponse("Unauthorized", 401, "Authentication required");
+    }
+
+    const userId = user.id;
 
     // Fetch user's platforms using service
     const platformsService = new PlatformsService(supabase);

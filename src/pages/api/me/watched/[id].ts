@@ -1,7 +1,6 @@
 // src/pages/api/me/watched/[id].ts
 
 import type { APIRoute } from "astro";
-import { DEFAULT_USER_ID } from "../../../../db/supabase.client";
 import { WatchedItemIdSchema } from "../../../../lib/schemas/watched.schema";
 import { WatchedService, WatchedItemNotFoundError } from "../../../../lib/services/watched.service";
 import { errorResponse } from "../../../../lib/utils";
@@ -27,7 +26,14 @@ export const DELETE: APIRoute = async ({ locals, params }) => {
   try {
     // Get Supabase client and user from middleware
     const supabase = locals.supabase;
-    const userId = DEFAULT_USER_ID; // TODO: Replace with actual user from auth when middleware is ready
+    const user = locals.user;
+
+    // Check authentication
+    if (!user) {
+      return errorResponse("Unauthorized", 401, "Authentication required");
+    }
+
+    const userId = user.id;
 
     // Validate path parameter with Zod
     const validationResult = WatchedItemIdSchema.safeParse({ id: params.id });
