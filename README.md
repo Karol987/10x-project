@@ -44,6 +44,13 @@ Streamly is a responsive web application that eliminates decision paralysis for 
 - **DigitalOcean** – hosting
 - **ESLint / Prettier / Husky / lint-staged** – DX & code quality
 
+### Testing
+
+- **Vitest** – unit & integration tests
+- **React Testing Library** – component testing
+- **Playwright** – end-to-end tests
+- **MSW (Mock Service Worker)** – API mocking
+
 ---
 
 ## Getting Started Locally

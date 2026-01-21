@@ -1,0 +1,9 @@
+# E2E Tests Directory
+
+This directory contains end-to-end tests using Playwright.
+
+## Structure
+
+- Place your e2e test files here with `.spec.ts` or `.test.ts` extensions
+- Use Page Object Model pattern for better test maintainability
+- Example: `e2e/auth/login.spec.ts`, `e2e/recommendations/search.spec.ts`

@@ -17,5 +17,12 @@ Backend - Supabase jako kompleksowe rozwiązanie backendowe:
 
 CI/CD i Hosting:
 
-- Github Actions do tworzenia pipeline’ów CI/CD
+- Github Actions do tworzenia pipeline'ów CI/CD
 - DigitalOcean do hostowania aplikacji za pośrednictwem obrazu docker
+
+Testowanie:
+
+- Vitest służy jako główny framework do testów jednostkowych i integracyjnych (kompatybilny z ekosystemem Vite/Astro)
+- React Testing Library zapewnia narzędzia do testowania komponentów React w izolacji
+- Playwright umożliwia przeprowadzanie testów end-to-end, symulując pełne ścieżki użytkownika w przeglądarce
+- MSW (Mock Service Worker) służy do przechwytywania i mockowania zapytań sieciowych (TMDb, MOTN API), aby nie zużywać limitów API podczas testów
