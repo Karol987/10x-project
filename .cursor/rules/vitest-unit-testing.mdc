@@ -1,10 +1,3 @@
----
-alwaysApply: true
----
-# AI Rules for {{project-name}}
-
-{{project-description}}
-
 ## TESTING
 
 ### Guidelines for UNIT
@@ -22,3 +15,31 @@ alwaysApply: true
 - Configure jsdom for DOM testing - Set `environment: 'jsdom'` in your configuration for frontend component tests and combine with testing-library utilities for realistic user interaction simulation.
 - Structure tests for maintainability - Group related tests with descriptive `describe` blocks, use explicit assertion messages, and follow the Arrange-Act-Assert pattern to make tests self-documenting.
 - Leverage TypeScript type checking in tests - Enable strict typing in your tests to catch type errors early, use `expectTypeOf()` for type-level assertions, and ensure mocks preserve the original type signatures.
+
+#### Test Coverage Standards
+
+When creating unit tests for validation functions and business logic:
+
+- **Comprehensive coverage** - Test valid inputs, invalid inputs, edge cases, boundary conditions, return types, and consistency
+- **Business rules** - Explicitly test each business rule with dedicated test cases
+- **Validation priority** - Test the order in which validation rules are applied
+- **Edge cases** - Include whitespace, unicode, emoji, very long inputs, empty strings, special characters
+- **Real-world scenarios** - Simulate common user mistakes and typical input patterns
+- **Type safety** - Verify return value types match TypeScript signatures
+- **Consistency** - Ensure deterministic behavior with multiple calls using same input
+- **Documentation** - Include comments for non-obvious behavior or known limitations
+
+Example test structure for validation functions:
+```typescript
+describe("Component - function()", () => {
+  describe("Valid inputs", () => { /* happy path tests */ });
+  describe("Invalid inputs", () => { /* error cases */ });
+  describe("Edge cases", () => { /* boundary conditions */ });
+  describe("Business rules", () => { /* explicit rule testing */ });
+  describe("Return value types", () => { /* type verification */ });
+  describe("Consistency checks", () => { /* deterministic behavior */ });
+});
+```
+
+See `src/components/auth/RegisterForm.password.test.tsx` for reference implementation (198 tests covering `validatePassword`, `validateConfirmPassword`, and `passwordChecks`).
+
