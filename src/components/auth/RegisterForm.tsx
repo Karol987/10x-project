@@ -180,7 +180,7 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
   };
 
   return (
-    <Card>
+    <Card data-test-id="register-form">
       <CardHeader>
         <CardTitle className="text-2xl">Utwórz konto</CardTitle>
         <CardDescription>Wypełnij formularz, aby założyć nowe konto</CardDescription>
@@ -190,6 +190,7 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
           {/* Success message */}
           {successMessage && (
             <div
+              data-test-id="register-success-message"
               className={cn(
                 "p-3 rounded-lg bg-green-50 border border-green-200",
                 "dark:bg-green-950/20 dark:border-green-900/50"
@@ -207,6 +208,7 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
           {/* General error message */}
           {errors.general && (
             <div
+              data-test-id="register-error-message"
               className={cn(
                 "p-3 rounded-lg bg-destructive/10 border border-destructive/20",
                 "dark:bg-destructive/20"
@@ -234,6 +236,7 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
               aria-describedby={errors.email ? `${emailId}-error` : undefined}
               disabled={isSubmitting}
               autoComplete="email"
+              data-test-id="register-email-input"
             />
             {errors.email && (
               <p id={`${emailId}-error`} className="text-sm text-destructive" role="alert">
@@ -255,6 +258,7 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
               aria-describedby={errors.password ? `${passwordId}-error ${passwordId}-requirements` : `${passwordId}-requirements`}
               disabled={isSubmitting}
               autoComplete="new-password"
+              data-test-id="register-password-input"
             />
             {errors.password && (
               <p id={`${passwordId}-error`} className="text-sm text-destructive" role="alert">
@@ -295,6 +299,7 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
               aria-describedby={errors.confirmPassword ? `${confirmPasswordId}-error` : undefined}
               disabled={isSubmitting}
               autoComplete="new-password"
+              data-test-id="register-confirm-password-input"
             />
             {errors.confirmPassword && (
               <p id={`${confirmPasswordId}-error`} className="text-sm text-destructive" role="alert">
@@ -305,7 +310,7 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
         </CardContent>
 
         <CardFooter className="flex flex-col gap-4">
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
+          <Button type="submit" className="w-full" disabled={isSubmitting} data-test-id="register-submit-button">
             {isSubmitting ? (
               <>
                 <Loader2 className="animate-spin" />
@@ -321,6 +326,7 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
             <a
               href="/auth/login"
               className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-sm"
+              data-test-id="register-login-link"
             >
               Zaloguj się
             </a>

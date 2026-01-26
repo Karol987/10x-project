@@ -40,7 +40,11 @@ export function PlatformGrid({
   // Loading skeleton
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+      <div
+        data-testid="platform-grid-loading"
+        data-test-id="platform-grid-loading"
+        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"
+      >
         {Array.from({ length: 8 }).map((_, i) => (
           <Skeleton key={i} className="h-32 rounded-lg" />
         ))}
@@ -51,7 +55,11 @@ export function PlatformGrid({
   // Empty state
   if (allPlatforms.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
+      <div
+        data-testid="platform-grid-empty"
+        data-test-id="platform-grid-empty"
+        className="text-center py-8 text-muted-foreground"
+      >
         <p>Brak dostępnych platform</p>
       </div>
     );
@@ -59,6 +67,9 @@ export function PlatformGrid({
 
   return (
     <div
+      data-testid="platform-grid"
+      data-test-id="platform-grid"
+      data-pending={isPending}
       className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"
       role="group"
       aria-label="Wybór platform VOD"
@@ -82,4 +93,3 @@ export function PlatformGrid({
     </div>
   );
 }
-

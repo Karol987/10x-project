@@ -76,26 +76,25 @@ export const UserMenu = ({ userEmail }: UserMenuProps) => {
         className="flex items-center gap-2"
         aria-label="Menu użytkownika"
         aria-expanded={isOpen}
+        data-test-id="user-menu-button"
       >
         <User className="h-5 w-5" />
         {userEmail && <span className="hidden sm:inline">{userEmail}</span>}
-        <ChevronDown
-          className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
-        />
+        <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </Button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 rounded-md border bg-popover shadow-lg z-50">
+        <div
+          className="absolute right-0 mt-2 w-56 rounded-md border bg-popover shadow-lg z-50"
+          data-test-id="user-menu-dropdown"
+        >
           <div className="p-2">
-            {userEmail && (
-              <div className="px-3 py-2 text-sm text-muted-foreground border-b mb-2">
-                {userEmail}
-              </div>
-            )}
+            {userEmail && <div className="px-3 py-2 text-sm text-muted-foreground border-b mb-2">{userEmail}</div>}
 
             <button
               onClick={handleProfileClick}
               className="flex w-full items-center gap-2 rounded-sm px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+              data-test-id="user-menu-profile-button"
             >
               <Settings className="h-4 w-4" />
               <span>Ustawienia profilu</span>
@@ -104,6 +103,7 @@ export const UserMenu = ({ userEmail }: UserMenuProps) => {
             <button
               onClick={handleHistoryClick}
               className="flex w-full items-center gap-2 rounded-sm px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+              data-test-id="user-menu-history-button"
             >
               <History className="h-4 w-4" />
               <span>Historia obejrzanych</span>
@@ -113,6 +113,7 @@ export const UserMenu = ({ userEmail }: UserMenuProps) => {
               onClick={handleLogout}
               disabled={isLoggingOut}
               className="flex w-full items-center gap-2 rounded-sm px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              data-test-id="user-menu-logout-button"
             >
               <LogOut className="h-4 w-4" />
               <span>{isLoggingOut ? "Wylogowywanie..." : "Wyloguj się"}</span>

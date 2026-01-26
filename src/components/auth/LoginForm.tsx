@@ -125,7 +125,7 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
   };
 
   return (
-    <Card>
+    <Card data-test-id="login-form">
       <CardHeader>
         <CardTitle className="text-2xl">Zaloguj się</CardTitle>
         <CardDescription>Wprowadź swoje dane, aby uzyskać dostęp do konta</CardDescription>
@@ -135,6 +135,7 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
           {/* General error message */}
           {errors.general && (
             <div
+              data-test-id="login-error-message"
               className={cn(
                 "p-3 rounded-lg bg-destructive/10 border border-destructive/20",
                 "dark:bg-destructive/20"
@@ -162,6 +163,7 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
               aria-describedby={errors.email ? `${emailId}-error` : undefined}
               disabled={isSubmitting}
               autoComplete="email"
+              data-test-id="login-email-input"
             />
             {errors.email && (
               <p id={`${emailId}-error`} className="text-sm text-destructive" role="alert">
@@ -191,6 +193,7 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
               aria-describedby={errors.password ? `${passwordId}-error` : undefined}
               disabled={isSubmitting}
               autoComplete="current-password"
+              data-test-id="login-password-input"
             />
             {errors.password && (
               <p id={`${passwordId}-error`} className="text-sm text-destructive" role="alert">
@@ -201,7 +204,7 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
         </CardContent>
 
         <CardFooter className="flex flex-col gap-4">
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
+          <Button type="submit" className="w-full" disabled={isSubmitting} data-test-id="login-submit-button">
             {isSubmitting ? (
               <>
                 <Loader2 className="animate-spin" />
@@ -217,6 +220,7 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
             <a
               href="/auth/register"
               className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-sm"
+              data-test-id="login-register-link"
             >
               Zarejestruj się
             </a>

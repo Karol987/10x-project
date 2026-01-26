@@ -36,6 +36,11 @@ export function PlatformCard({
       type="button"
       onClick={handleClick}
       disabled={isDisabled || isPending}
+      data-testid={`platform-card-${platform.id}`}
+      data-test-id={`platform-card-${platform.id}`}
+      data-platform-name={platform.name}
+      data-selected={isSelected}
+      data-pending={isPending}
       className={cn(
         "relative flex flex-col items-center justify-center gap-3 p-6 rounded-lg border-2 transition-all duration-200",
         "hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
@@ -52,6 +57,8 @@ export function PlatformCard({
       {/* Loading indicator */}
       {isPending && (
         <div
+          data-testid="platform-card-loading-indicator"
+          data-test-id="platform-card-loading-indicator"
           className="absolute top-2 left-2 size-6 rounded-full bg-muted flex items-center justify-center"
           aria-hidden="true"
         >
@@ -62,6 +69,8 @@ export function PlatformCard({
       {/* Selection indicator */}
       {isSelected && !isPending && (
         <div
+          data-testid="platform-card-selected-indicator"
+          data-test-id="platform-card-selected-indicator"
           className="absolute top-2 right-2 size-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center"
           aria-hidden="true"
         >
@@ -90,8 +99,9 @@ export function PlatformCard({
       </div>
 
       {/* Platform name */}
-      <span className="text-sm font-medium text-center line-clamp-2">{platform.name}</span>
+      <span className="text-sm font-medium text-center line-clamp-2" data-test-id="platform-card-name">
+        {platform.name}
+      </span>
     </button>
   );
 }
-

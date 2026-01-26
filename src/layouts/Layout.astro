@@ -23,7 +23,7 @@ const user = Astro.locals.user;
     <title>{title}</title>
     <script is:inline>
       // Initialize theme before page renders to prevent flash
-      (function() {
+      (function () {
         const storedTheme = localStorage.getItem("theme");
         if (storedTheme === "dark") {
           document.documentElement.classList.add("dark");
@@ -49,13 +49,13 @@ const user = Astro.locals.user;
                 10x App
               </a>
               <nav class="hidden md:flex items-center gap-4">
-                <a href="/" class="text-sm hover:text-primary transition-colors">
+                <a href="/" class="text-sm hover:text-primary transition-colors" data-test-id="nav-home-link">
                   Home
                 </a>
-                <a href="/history" class="text-sm hover:text-primary transition-colors">
+                <a href="/history" class="text-sm hover:text-primary transition-colors" data-test-id="nav-history-link">
                   Historia
                 </a>
-                <a href="/profile" class="text-sm hover:text-primary transition-colors">
+                <a href="/profile" class="text-sm hover:text-primary transition-colors" data-test-id="nav-profile-link">
                   Profil
                 </a>
               </nav>

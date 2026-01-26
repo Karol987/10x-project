@@ -65,7 +65,7 @@ function ProfileContent() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-[400px]" data-test-id="profile-loading">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="size-8 animate-spin text-primary" />
           <p className="text-sm text-muted-foreground">Ładowanie preferencji...</p>
@@ -77,7 +77,7 @@ function ProfileContent() {
   // Error state
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-[400px]" data-test-id="profile-error">
         <div className="text-center space-y-2 max-w-md">
           <p className="text-lg font-medium text-destructive">Wystąpił błąd</p>
           <p className="text-sm text-muted-foreground">
@@ -89,13 +89,13 @@ function ProfileContent() {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-8 pb-12">
+    <div className="w-full max-w-4xl mx-auto space-y-8 pb-12" data-test-id="profile-container">
       {/* Header */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Profil</h1>
-        <p className="text-muted-foreground">
-          Zarządzaj swoimi preferencjami i ustawieniami aplikacji
-        </p>
+        <h1 className="text-3xl font-bold tracking-tight" data-test-id="profile-title">
+          Profil
+        </h1>
+        <p className="text-muted-foreground">Zarządzaj swoimi preferencjami i ustawieniami aplikacji</p>
       </div>
 
       {/* Theme Section */}
@@ -111,9 +111,11 @@ function ProfileContent() {
       <div className="border-t border-border" />
 
       {/* Platforms Section */}
-      <section className="space-y-4">
+      <section data-testid="platforms-section" data-test-id="platforms-section" className="space-y-4">
         <div className="space-y-1">
-          <h2 className="text-xl font-semibold">Platformy VOD</h2>
+          <h2 className="text-xl font-semibold" data-test-id="platforms-section-title">
+            Platformy VOD
+          </h2>
           <p className="text-sm text-muted-foreground">
             Wybierz platformy, z których korzystasz. Musisz wybrać co najmniej jedną platformę.
           </p>
@@ -135,8 +137,7 @@ function ProfileContent() {
         <div className="space-y-1">
           <h2 className="text-xl font-semibold">Ulubieni twórcy</h2>
           <p className="text-sm text-muted-foreground">
-            Dodaj aktorów i reżyserów, których lubisz. Im więcej wybierzesz, tym lepsze będą
-            rekomendacje.
+            Dodaj aktorów i reżyserów, których lubisz. Im więcej wybierzesz, tym lepsze będą rekomendacje.
           </p>
         </div>
 
@@ -159,15 +160,9 @@ function ProfileContent() {
       <section className="space-y-4">
         <div className="space-y-1">
           <h2 className="text-xl font-semibold">Obejrzane</h2>
-          <p className="text-sm text-muted-foreground">
-            Przeglądaj filmy i seriale, które oznaczyłeś jako obejrzane
-          </p>
+          <p className="text-sm text-muted-foreground">Przeglądaj filmy i seriale, które oznaczyłeś jako obejrzane</p>
         </div>
-        <Button
-          variant="outline"
-          className="w-full sm:w-auto"
-          onClick={() => (window.location.href = "/history")}
-        >
+        <Button variant="outline" className="w-full sm:w-auto" onClick={() => (window.location.href = "/history")}>
           <History className="h-4 w-4 mr-2" />
           Zobacz historię obejrzanych
         </Button>
@@ -186,4 +181,3 @@ export function ProfileContainer() {
     </QueryClientProvider>
   );
 }
-
