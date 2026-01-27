@@ -1,4 +1,5 @@
 // src/pages/api/me/creators/index.ts
+/* eslint-disable no-console */
 
 import type { APIRoute } from "astro";
 import {

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // Quick test script for recommendations endpoint
 import fetch from "node-fetch";
 

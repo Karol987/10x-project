@@ -622,7 +622,7 @@ describe("WatchedItemRow Component", () => {
     it("should handle delete operation flow - start to finish", async () => {
       const user = userEvent.setup();
 
-      const handleDelete = vi.fn().mockImplementation(async (id: string) => {
+      const handleDelete = vi.fn().mockImplementation(async () => {
         await new Promise((resolve) => setTimeout(resolve, 100));
       });
 

@@ -1,4 +1,5 @@
 // src/lib/services/platforms.service.ts
+/* eslint-disable no-console */
 
 import type { SupabaseClient } from "../../db/supabase.client";
 import type { PlatformDTO, UUID } from "../../types";

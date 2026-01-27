@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { useState, useId } from "react";
 import {
   Dialog,

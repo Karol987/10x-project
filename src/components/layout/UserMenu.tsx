@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { useState, useCallback, useRef, useEffect } from "react";
 import { User, LogOut, Settings, ChevronDown, History } from "lucide-react";
 

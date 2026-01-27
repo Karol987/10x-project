@@ -1,4 +1,5 @@
 // src/pages/api/me/platforms.ts
+/* eslint-disable no-console */
 
 import type { APIRoute } from "astro";
 import { UserPlatformsReplaceCommandSchema } from "../../../lib/schemas/platforms.schema";

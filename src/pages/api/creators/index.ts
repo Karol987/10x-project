@@ -1,4 +1,5 @@
 // src/pages/api/creators/index.ts
+/* eslint-disable no-console */
 
 import type { APIRoute } from "astro";
 import { CreatorSearchSchema } from "../../../lib/schemas/creators.schema";

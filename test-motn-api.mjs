@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // Test Movie of the Night API directly
 // Check if Titanic (movie/597) has streaming info
 

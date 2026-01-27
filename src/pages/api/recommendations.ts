@@ -1,4 +1,5 @@
 // src/pages/api/recommendations.ts
+/* eslint-disable no-console */
 
 import type { APIRoute } from "astro";
 import { errorResponse, jsonResponse } from "../../lib/utils";

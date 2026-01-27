@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { useState, useId } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

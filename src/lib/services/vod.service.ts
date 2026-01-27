@@ -1,4 +1,5 @@
 // src/lib/services/vod.service.ts
+/* eslint-disable no-console */
 
 import type { SupabaseClient } from "../../db/supabase.client";
 import type { CreatorDTO, RecommendationDTO, UUID, PlatformSlug } from "../../types";
