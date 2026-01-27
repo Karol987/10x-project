@@ -19,8 +19,17 @@ jobs:
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       
     steps:
-      - name: Setup Project
-        uses: ./.github/actions/setup-project
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Run Linter
         run: npm run lint
