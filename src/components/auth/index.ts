@@ -1,6 +1,6 @@
 /**
  * Authentication components
- * 
+ *
  * This module exports all authentication-related UI components.
  * These components handle the frontend presentation only and do not
  * include backend logic or state management.

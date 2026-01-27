@@ -38,7 +38,6 @@ function ProfileContent() {
     addCreator,
     removeCreator,
     isUpdatingPlatforms,
-    isRemovingCreator,
   } = useProfilePreferences();
 
   const [removingCreatorId, setRemovingCreatorId] = useState<string | null>(null);

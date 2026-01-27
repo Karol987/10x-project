@@ -82,4 +82,3 @@ export function CreatorChip({ creator, onRemove, isPending = false }: CreatorChi
     </div>
   );
 }
-

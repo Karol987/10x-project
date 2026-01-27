@@ -56,14 +56,26 @@ const reactConfig = tseslint.config({
   },
 });
 
+const mjsConfig = tseslint.config({
+  files: ["**/*.mjs"],
+  languageOptions: {
+    globals: {
+      console: "readonly",
+      fetch: "readonly",
+      process: "readonly",
+    },
+  },
+});
+
 export default tseslint.config(
   includeIgnoreFile(gitignorePath),
   {
-    ignores: ["src/db/database.types.ts"],
+    ignores: ["src/db/database.types.ts", "src/layouts/Layout.astro"],
   },
   baseConfig,
   jsxA11yConfig,
   reactConfig,
+  mjsConfig,
   eslintPluginAstro.configs["flat/recommended"],
   eslintPluginPrettier
 );

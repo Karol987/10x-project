@@ -63,21 +63,24 @@ export const PUT: APIRoute = async ({ locals, request }) => {
   try {
     // Get Supabase client from middleware
     const supabase = locals.supabase;
-    
+
     // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
-    console.log('DEBUG: Auth check', { 
-      hasUser: !!user, 
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    console.log("DEBUG: Auth check", {
+      hasUser: !!user,
       userId: user?.id,
       localsUserId: locals.user?.id,
-      authError: authError?.message 
+      authError: authError?.message,
     });
-    
+
     if (authError || !user) {
       return errorResponse("Unauthorized", 401, "Unauthorized Access");
     }
-    
+
     const userId = user.id;
 
     // Parse request body

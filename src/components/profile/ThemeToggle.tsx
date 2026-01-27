@@ -62,9 +62,7 @@ export function ThemeToggle() {
     <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-card">
       <div className="space-y-1">
         <h3 className="text-sm font-medium">Motyw</h3>
-        <p className="text-xs text-muted-foreground">
-          {theme === "light" ? "Jasny" : "Ciemny"}
-        </p>
+        <p className="text-xs text-muted-foreground">{theme === "light" ? "Jasny" : "Ciemny"}</p>
       </div>
 
       <button
@@ -97,4 +95,3 @@ export function ThemeToggle() {
     </div>
   );
 }
-

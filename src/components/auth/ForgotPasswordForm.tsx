@@ -62,7 +62,7 @@ export function ForgotPasswordForm({ onSubmit }: ForgotPasswordFormProps) {
         console.log("Password reset request for:", email);
       }
       setIsSuccess(true);
-    } catch (error) {
+    } catch {
       setErrors({
         general: "Nie udało się wysłać linku resetującego. Spróbuj ponownie.",
       });
@@ -109,19 +109,14 @@ export function ForgotPasswordForm({ onSubmit }: ForgotPasswordFormProps) {
     <Card>
       <CardHeader>
         <CardTitle className="text-2xl">Resetuj hasło</CardTitle>
-        <CardDescription>
-          Wprowadź swój adres email, a wyślemy Ci link do zresetowania hasła
-        </CardDescription>
+        <CardDescription>Wprowadź swój adres email, a wyślemy Ci link do zresetowania hasła</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           {/* General error message */}
           {errors.general && (
             <div
-              className={cn(
-                "p-3 rounded-lg bg-destructive/10 border border-destructive/20",
-                "dark:bg-destructive/20"
-              )}
+              className={cn("p-3 rounded-lg bg-destructive/10 border border-destructive/20", "dark:bg-destructive/20")}
               role="alert"
               aria-live="assertive"
             >
@@ -145,7 +140,6 @@ export function ForgotPasswordForm({ onSubmit }: ForgotPasswordFormProps) {
               aria-describedby={errors.email ? `${emailId}-error` : undefined}
               disabled={isSubmitting}
               autoComplete="email"
-              autoFocus
             />
             {errors.email && (
               <p id={`${emailId}-error`} className="text-sm text-destructive" role="alert">

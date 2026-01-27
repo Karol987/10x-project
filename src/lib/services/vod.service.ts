@@ -15,7 +15,6 @@ import {
   ConfigurationError,
   type TmdbPerson,
   type TmdbMovie,
-  type VodCacheEntry,
   type CachedAvailability,
 } from "./vod.service.types";
 
@@ -24,7 +23,7 @@ import {
  */
 interface CreatorMovieInfo {
   creatorId: number;
-  role: 'actor' | 'director';
+  role: "actor" | "director";
   name: string;
 }
 
@@ -110,7 +109,9 @@ export class VodService {
         throw error;
       }
 
-      throw new ExternalApiError(`Failed to fetch from TMDb: ${error instanceof Error ? error.message : "Unknown error"}`);
+      throw new ExternalApiError(
+        `Failed to fetch from TMDb: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
     }
   }
 
@@ -171,11 +172,13 @@ export class VodService {
       }
 
       // Handle timeout
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw new ExternalApiError('MOTN API request timeout after 15 seconds');
+      if (error instanceof Error && error.name === "AbortError") {
+        throw new ExternalApiError("MOTN API request timeout after 15 seconds");
       }
 
-      throw new ExternalApiError(`Failed to fetch from MOTN: ${error instanceof Error ? error.message : "Unknown error"}`);
+      throw new ExternalApiError(
+        `Failed to fetch from MOTN: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
     }
   }
 
@@ -192,10 +195,7 @@ export class VodService {
    * @private
    */
   private async getWatchedMovieIds(userId: UUID): Promise<Set<string>> {
-    const { data, error } = await this.supabase
-      .from("watched_items")
-      .select("external_movie_id")
-      .eq("user_id", userId);
+    const { data, error } = await this.supabase.from("watched_items").select("external_movie_id").eq("user_id", userId);
 
     if (error) {
       console.error("Failed to fetch watched items:", error);
@@ -271,10 +271,10 @@ export class VodService {
     platformSlugs: PlatformSlug[],
     creatorExternalIds: string[]
   ): Promise<RecommendationDTO[]> {
-    console.log('[VodService] getRecommendations called', { 
-      userId, 
-      platformSlugs, 
-      creatorExternalIds 
+    console.log("[VodService] getRecommendations called", {
+      userId,
+      platformSlugs,
+      creatorExternalIds,
     });
 
     // Configuration for batched fetching
@@ -285,13 +285,13 @@ export class VodService {
 
     // Early return for invalid input
     if (creatorExternalIds.length === 0 || platformSlugs.length === 0) {
-      console.log('[VodService] Early return: no creators or platforms');
+      console.log("[VodService] Early return: no creators or platforms");
       return [];
     }
 
     // Step 1: Fetch user's watched items to exclude from recommendations
     const watchedExternalIds = await this.getWatchedMovieIds(userId);
-    console.log('[VodService] User has watched', watchedExternalIds.size, 'items');
+    console.log("[VodService] User has watched", watchedExternalIds.size, "items");
 
     // Step 2: Parse external API IDs to integers (TMDb person IDs)
     const tmdbCreatorIds = creatorExternalIds
@@ -301,38 +301,43 @@ export class VodService {
       })
       .filter((id): id is number => id !== null);
 
-    console.log('[VodService] Parsed TMDb creator IDs:', tmdbCreatorIds);
+    console.log("[VodService] Parsed TMDb creator IDs:", tmdbCreatorIds);
 
     if (tmdbCreatorIds.length === 0) {
-      console.log('[VodService] No valid TMDb creator IDs found');
+      console.log("[VodService] No valid TMDb creator IDs found");
       return [];
     }
 
     // Step 3: Fetch filmography for all creators and build creator-movie mapping
     const { movies: allMovies, creatorMovieMap } = await this.fetchFilmographyForCreators(tmdbCreatorIds);
-    console.log('[VodService] Fetched movies from filmography:', allMovies.length);
+    console.log("[VodService] Fetched movies from filmography:", allMovies.length);
 
     // Step 4: Filter out already watched movies
     const unwatchedMovies = allMovies.filter((movie) => {
       const externalId = movie.id.toString();
       return !watchedExternalIds.has(externalId);
     });
-    console.log('[VodService] Unwatched movies after filtering:', unwatchedMovies.length);
+    console.log("[VodService] Unwatched movies after filtering:", unwatchedMovies.length);
 
     // Step 5: Deduplicate movies by TMDb ID
     const uniqueMovies = this.deduplicateMovies(unwatchedMovies);
-    console.log('[VodService] Unique movies after deduplication:', uniqueMovies.length);
+    console.log("[VodService] Unique movies after deduplication:", uniqueMovies.length);
 
     // Step 6: Sort by release date (newest first)
     const sortedMovies = this.sortMoviesByReleaseDate(uniqueMovies);
-    console.log('[VodService] Sorted movies (top 5):', sortedMovies.slice(0, 5).map(m => ({ id: m.id, title: m.title, release_date: m.release_date })));
+    console.log(
+      "[VodService] Sorted movies (top 5):",
+      sortedMovies.slice(0, 5).map((m) => ({ id: m.id, title: m.title, release_date: m.release_date }))
+    );
 
     // Step 7: Iterative batching to collect recommendations until target is met
     const recommendations: RecommendationDTO[] = [];
     let totalApiCalls = 0;
     let processedCount = 0;
-    
-    console.log(`[VodService] Starting iterative fetch (target: ${TARGET_RECOMMENDATION_COUNT}, max API calls: ${MAX_API_CALLS_PER_REQUEST})`);
+
+    console.log(
+      `[VodService] Starting iterative fetch (target: ${TARGET_RECOMMENDATION_COUNT}, max API calls: ${MAX_API_CALLS_PER_REQUEST})`
+    );
 
     while (
       recommendations.length < TARGET_RECOMMENDATION_COUNT &&
@@ -341,32 +346,36 @@ export class VodService {
     ) {
       // Get next batch of movies to check
       const batch = sortedMovies.slice(processedCount, processedCount + BATCH_SIZE);
-      const batchIds = batch.map(m => m.id);
-      
-      console.log(`[VodService] Batch ${Math.floor(processedCount / BATCH_SIZE) + 1}: Checking ${batch.length} movies (processed: ${processedCount}/${sortedMovies.length})`);
+      const batchIds = batch.map((m) => m.id);
+
+      console.log(
+        `[VodService] Batch ${Math.floor(processedCount / BATCH_SIZE) + 1}: Checking ${batch.length} movies (processed: ${processedCount}/${sortedMovies.length})`
+      );
 
       // Fetch availability for this batch
       const remainingApiCalls = MAX_API_CALLS_PER_REQUEST - totalApiCalls;
       const result = await this.getAvailabilityForMovies(batchIds, "pl", remainingApiCalls);
-      
+
       totalApiCalls += result.apiCallsMade;
-      console.log(`[VodService] Batch completed: ${result.apiCallsMade} API calls, ${result.cacheHits} cache hits, total API calls: ${totalApiCalls}`);
+      console.log(
+        `[VodService] Batch completed: ${result.apiCallsMade} API calls, ${result.cacheHits} cache hits, total API calls: ${totalApiCalls}`
+      );
 
       // Filter batch movies by availability on user's platforms
       for (const movie of batch) {
         const availability = result.availabilityMap.get(movie.id) || [];
         const subscriptionOnly = this.filterSubscriptionOnly(availability);
-        
+
         if (this.isAvailableOnUserPlatforms(subscriptionOnly, platformSlugs)) {
           const recommendation = this.mapMovieToRecommendationDTO(
-            movie, 
-            subscriptionOnly, 
-            platformSlugs, 
-            creatorExternalIds, 
+            movie,
+            subscriptionOnly,
+            platformSlugs,
+            creatorExternalIds,
             creatorMovieMap
           );
           recommendations.push(recommendation);
-          
+
           // Check if we've hit our target
           if (recommendations.length >= TARGET_RECOMMENDATION_COUNT) {
             console.log(`[VodService] Target reached: ${recommendations.length} recommendations found`);
@@ -376,13 +385,15 @@ export class VodService {
       }
 
       processedCount += batch.length;
-      
-      console.log(`[VodService] Progress: ${recommendations.length} recommendations found, ${processedCount} movies processed, ${totalApiCalls} API calls made`);
+
+      console.log(
+        `[VodService] Progress: ${recommendations.length} recommendations found, ${processedCount} movies processed, ${totalApiCalls} API calls made`
+      );
     }
 
     // Step 8: Final limiting and reporting
     const finalRecommendations = recommendations.slice(0, MAX_RESULTS);
-    
+
     console.log(`[VodService] Fetch complete:`, {
       recommendationsFound: finalRecommendations.length,
       moviesProcessed: processedCount,
@@ -419,7 +430,7 @@ export class VodService {
         // Fetch both movie credits and person details
         const [creditsResponse, personResponse] = await Promise.all([
           this.fetchFromTmdb<unknown>(`/person/${creatorId}/movie_credits`),
-          this.fetchFromTmdb<unknown>(`/person/${creatorId}`)
+          this.fetchFromTmdb<unknown>(`/person/${creatorId}`),
         ]);
 
         // Validate response schemas
@@ -431,14 +442,14 @@ export class VodService {
         // Process cast movies (actor role)
         for (const movie of validatedCredits.cast) {
           allMovies.push(movie);
-          
+
           const existing = creatorMovieMap.get(movie.id) || [];
           // Check if creator already exists for this movie with this role
-          const alreadyExists = existing.some(c => c.creatorId === creatorId && c.role === 'actor');
+          const alreadyExists = existing.some((c) => c.creatorId === creatorId && c.role === "actor");
           if (!alreadyExists) {
             existing.push({
               creatorId,
-              role: 'actor',
+              role: "actor",
               name: creatorName,
             });
             creatorMovieMap.set(movie.id, existing);
@@ -448,19 +459,19 @@ export class VodService {
         // Process crew movies (check specific job)
         for (const crewCredit of validatedCredits.crew) {
           // Only include Directors - ignore other crew roles (producers, writers, etc.)
-          if (crewCredit.job !== 'Director') {
+          if (crewCredit.job !== "Director") {
             continue;
           }
 
           allMovies.push(crewCredit);
-          
+
           const existing = creatorMovieMap.get(crewCredit.id) || [];
           // Check if creator already exists for this movie with this role
-          const alreadyExists = existing.some(c => c.creatorId === creatorId && c.role === 'director');
+          const alreadyExists = existing.some((c) => c.creatorId === creatorId && c.role === "director");
           if (!alreadyExists) {
             existing.push({
               creatorId,
-              role: 'director',
+              role: "director",
               name: creatorName,
             });
             creatorMovieMap.set(crewCredit.id, existing);
@@ -546,16 +557,12 @@ export class VodService {
 
     // Extract creators from the creator-movie mapping
     const movieCreators = creatorMovieMap.get(movie.id) || [];
-    
+
     // Convert creator external IDs to numbers for comparison
-    const favoriteCreatorIds = new Set(
-      creatorExternalIds
-        .map(id => parseInt(id, 10))
-        .filter(id => !isNaN(id))
-    );
+    const favoriteCreatorIds = new Set(creatorExternalIds.map((id) => parseInt(id, 10)).filter((id) => !isNaN(id)));
 
     // Map to RecommendationCreatorDTO format
-    const creators: RecommendationDTO["creators"] = movieCreators.map(creator => ({
+    const creators: RecommendationDTO["creators"] = movieCreators.map((creator) => ({
       id: `tmdb-${creator.creatorId}`,
       name: creator.name,
       creator_role: creator.role,
@@ -582,10 +589,7 @@ export class VodService {
    * @param platformSlugs - User's platform slugs
    * @returns Array of unique platform slugs where movie is available
    */
-  private extractPlatformSlugs(
-    availability: CachedAvailability[],
-    platformSlugs: PlatformSlug[]
-  ): PlatformSlug[] {
+  private extractPlatformSlugs(availability: CachedAvailability[], platformSlugs: PlatformSlug[]): PlatformSlug[] {
     // Create reverse mapping: service ID -> platform slug
     const reverseMapping: Record<string, PlatformSlug> = {};
     for (const [slug, serviceId] of Object.entries(PLATFORM_MAPPING)) {
@@ -661,11 +665,7 @@ export class VodService {
    * @param countryCode - ISO country code
    * @param availability - Availability data to cache
    */
-  private async saveToCache(
-    tmdbId: number,
-    countryCode: string,
-    availability: CachedAvailability[]
-  ): Promise<void> {
+  private async saveToCache(tmdbId: number, countryCode: string, availability: CachedAvailability[]): Promise<void> {
     const { error } = await this.supabase.from("vod_availability_cache").upsert(
       {
         tmdb_id: tmdbId,
@@ -692,10 +692,7 @@ export class VodService {
    * @param countryCode - ISO country code
    * @returns Array of availability data or empty array on error
    */
-  private async fetchAvailabilityFromMotn(
-    tmdbId: number,
-    countryCode: string
-  ): Promise<CachedAvailability[]> {
+  private async fetchAvailabilityFromMotn(tmdbId: number, countryCode: string): Promise<CachedAvailability[]> {
     try {
       // Fetch from MOTN using TMDb ID with movie/ prefix
       // Note: MOTN API requires format "movie/{tmdbId}" for movies
@@ -707,14 +704,14 @@ export class VodService {
       const validatedResponse = MotnShowResponseSchema.parse(response);
 
       // Check if response indicates "not found" (result: null)
-      if ('result' in validatedResponse && validatedResponse.result === null) {
+      if ("result" in validatedResponse && validatedResponse.result === null) {
         return [];
       }
 
       // Handle show object (direct format)
-      if (!('result' in validatedResponse)) {
+      if (!("result" in validatedResponse)) {
         const show = validatedResponse;
-        
+
         // Check for NEW API format (streamingOptions)
         if (show.streamingOptions) {
           const countryOptions = show.streamingOptions[countryCode];
@@ -732,7 +729,7 @@ export class VodService {
 
           return availability;
         }
-        
+
         // Check for OLD API format (streamingInfo) - for backward compatibility
         if (show.streamingInfo) {
           const countryInfo = show.streamingInfo[countryCode];
@@ -810,7 +807,7 @@ export class VodService {
     maxApiFetches?: number
   ): Promise<AvailabilityResult> {
     console.log(`[VodService] Checking availability for ${tmdbIds.length} movies in country: ${countryCode}`);
-    
+
     // Step 1: Check cache
     const cachedData = await this.getCachedAvailability(tmdbIds, countryCode);
     const cacheHits = cachedData.size;
@@ -821,15 +818,13 @@ export class VodService {
     console.log(`[VodService] Cache misses: ${missingIds.length} movies need API fetch`);
 
     // Step 3: Fetch missing data from MOTN (with optional limit)
-    const idsToFetch = maxApiFetches !== undefined 
-      ? missingIds.slice(0, maxApiFetches)
-      : missingIds;
-    
+    const idsToFetch = maxApiFetches !== undefined ? missingIds.slice(0, maxApiFetches) : missingIds;
+
     let apiCallsMade = 0;
-    
+
     if (idsToFetch.length > 0) {
       console.log(`[VodService] Fetching ${idsToFetch.length} movies from MOTN API`);
-      
+
       for (const tmdbId of idsToFetch) {
         const availability = await this.fetchAvailabilityFromMotn(tmdbId, countryCode);
 
@@ -838,13 +833,13 @@ export class VodService {
 
         // Add to result map
         cachedData.set(tmdbId, availability);
-        
+
         apiCallsMade++;
         if (apiCallsMade % 5 === 0) {
           console.log(`[VodService] Progress: ${apiCallsMade}/${idsToFetch.length} movies fetched`);
         }
       }
-      
+
       console.log(`[VodService] Completed: ${apiCallsMade} movies fetched and cached`);
     }
 
@@ -918,10 +913,7 @@ export class VodService {
    * @param platformSlugs - User's platform slugs
    * @returns True if movie is available on at least one user platform
    */
-  private isAvailableOnUserPlatforms(
-    availability: CachedAvailability[],
-    platformSlugs: PlatformSlug[]
-  ): boolean {
+  private isAvailableOnUserPlatforms(availability: CachedAvailability[], platformSlugs: PlatformSlug[]): boolean {
     // Get MOTN service IDs for user's platforms
     const userServiceIds = platformSlugs
       .map((slug) => PLATFORM_MAPPING[slug])

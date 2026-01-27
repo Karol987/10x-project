@@ -14,10 +14,7 @@ const registerSchema = z
       .string()
       .min(8, "Hasło musi mieć minimum 8 znaków")
       .regex(/\d/, "Hasło musi zawierać przynajmniej jedną cyfrę")
-      .regex(
-        /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/,
-        "Hasło musi zawierać przynajmniej jeden znak specjalny",
-      ),
+      .regex(/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/, "Hasło musi zawierać przynajmniej jeden znak specjalny"),
     confirmPassword: z.string().min(1, "Potwierdzenie hasła jest wymagane"),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -49,7 +46,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         {
           status: 400,
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
     }
 
@@ -93,7 +90,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         {
           status: 400,
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
     }
 
@@ -116,7 +113,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       {
         status: 200,
         headers: { "Content-Type": "application/json" },
-      },
+      }
     );
   } catch (error) {
     console.error("Registration error:", error);
@@ -128,7 +125,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      },
+      }
     );
   }
 };

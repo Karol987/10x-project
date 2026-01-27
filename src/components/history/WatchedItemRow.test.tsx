@@ -6,7 +6,7 @@ import type { WatchedItemViewModel } from "@/types";
 
 /**
  * UNIT TESTS: WatchedItemRow Component
- * 
+ *
  * Test Coverage:
  * - Rendering with different props combinations
  * - Media type icon rendering (movie vs tv)
@@ -55,9 +55,9 @@ describe("WatchedItemRow Component", () => {
     });
 
     it("should render tv show title correctly", () => {
-      const item = createMockItem({ 
-        title: "Breaking Bad", 
-        media_type: "tv" 
+      const item = createMockItem({
+        title: "Breaking Bad",
+        media_type: "tv",
       });
       render(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
 
@@ -106,7 +106,7 @@ describe("WatchedItemRow Component", () => {
       const { container } = render(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
 
       // Film icon (lucide-react) has specific class structure
-      const icon = container.querySelector('svg.lucide-film');
+      const icon = container.querySelector("svg.lucide-film");
       expect(icon).toBeInTheDocument();
     });
 
@@ -115,7 +115,7 @@ describe("WatchedItemRow Component", () => {
       const { container } = render(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
 
       // Tv icon (lucide-react) has specific class structure
-      const icon = container.querySelector('svg.lucide-tv');
+      const icon = container.querySelector("svg.lucide-tv");
       expect(icon).toBeInTheDocument();
     });
 
@@ -123,8 +123,8 @@ describe("WatchedItemRow Component", () => {
       const item = createMockItem();
       const { container } = render(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
 
-      const icon = container.querySelector('svg');
-      expect(icon).toHaveAttribute('aria-hidden', 'true');
+      const icon = container.querySelector("svg");
+      expect(icon).toHaveAttribute("aria-hidden", "true");
     });
   });
 
@@ -152,7 +152,7 @@ describe("WatchedItemRow Component", () => {
       const item = createMockItem();
       const { container } = render(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
 
-      const trashIcon = container.querySelector('svg.lucide-trash-2');
+      const trashIcon = container.querySelector("svg.lucide-trash-2");
       expect(trashIcon).toBeInTheDocument();
     });
 
@@ -189,11 +189,9 @@ describe("WatchedItemRow Component", () => {
     it("should handle async delete operation", async () => {
       const user = userEvent.setup();
       const item = createMockItem();
-      
+
       // Mock async operation with delay
-      const asyncDelete = vi.fn().mockImplementation(() => 
-        new Promise(resolve => setTimeout(resolve, 100))
-      );
+      const asyncDelete = vi.fn().mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 100)));
 
       render(<WatchedItemRow item={item} onDelete={asyncDelete} />);
 
@@ -201,7 +199,7 @@ describe("WatchedItemRow Component", () => {
       await user.click(deleteButton);
 
       expect(asyncDelete).toHaveBeenCalledTimes(1);
-      
+
       await waitFor(() => {
         expect(asyncDelete).toHaveBeenCalledWith(item.id);
       });
@@ -213,7 +211,7 @@ describe("WatchedItemRow Component", () => {
       render(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
 
       const deleteButton = screen.getByRole("button");
-      
+
       // Attempt to click disabled button
       await user.click(deleteButton);
 
@@ -226,7 +224,7 @@ describe("WatchedItemRow Component", () => {
       render(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
 
       const deleteButton = screen.getByRole("button");
-      
+
       // Rapid clicks
       await user.click(deleteButton);
       await user.click(deleteButton);
@@ -242,16 +240,16 @@ describe("WatchedItemRow Component", () => {
       const item = createMockItem({ isDeleting: true });
       const { container } = render(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
 
-      const trashIcon = container.querySelector('svg.lucide-trash-2');
-      expect(trashIcon).toHaveClass('animate-pulse');
+      const trashIcon = container.querySelector("svg.lucide-trash-2");
+      expect(trashIcon).toHaveClass("animate-pulse");
     });
 
     it("should not show pulse animation when not deleting", () => {
       const item = createMockItem({ isDeleting: false });
       const { container } = render(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
 
-      const trashIcon = container.querySelector('svg.lucide-trash-2');
-      expect(trashIcon).not.toHaveClass('animate-pulse');
+      const trashIcon = container.querySelector("svg.lucide-trash-2");
+      expect(trashIcon).not.toHaveClass("animate-pulse");
     });
 
     it("should handle isDeleting undefined as false", () => {
@@ -260,9 +258,9 @@ describe("WatchedItemRow Component", () => {
 
       const deleteButton = screen.getByRole("button");
       expect(deleteButton).not.toBeDisabled();
-      
-      const trashIcon = container.querySelector('svg.lucide-trash-2');
-      expect(trashIcon).not.toHaveClass('animate-pulse');
+
+      const trashIcon = container.querySelector("svg.lucide-trash-2");
+      expect(trashIcon).not.toHaveClass("animate-pulse");
     });
   });
 
@@ -270,11 +268,12 @@ describe("WatchedItemRow Component", () => {
     it("should handle very long title with truncation", () => {
       const longTitle = "A".repeat(200);
       const item = createMockItem({ title: longTitle });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { container } = render(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
 
       const titleElement = screen.getByText(longTitle);
       expect(titleElement).toBeInTheDocument();
-      expect(titleElement).toHaveClass('truncate');
+      expect(titleElement).toHaveClass("truncate");
     });
 
     it("should handle title with special characters", () => {
@@ -302,7 +301,7 @@ describe("WatchedItemRow Component", () => {
       const item = createMockItem({ title: "   " });
       const { container } = render(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
 
-      const titleElement = container.querySelector('h3');
+      const titleElement = container.querySelector("h3");
       expect(titleElement).toBeInTheDocument();
       expect(titleElement?.textContent).toBe("   ");
     });
@@ -312,7 +311,7 @@ describe("WatchedItemRow Component", () => {
       render(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
 
       // Should render but be empty
-      const titleElement = screen.getByRole("listitem").querySelector('h3');
+      const titleElement = screen.getByRole("listitem").querySelector("h3");
       expect(titleElement).toBeInTheDocument();
       expect(titleElement).toHaveTextContent("");
     });
@@ -321,7 +320,7 @@ describe("WatchedItemRow Component", () => {
       const item = createMockItem({ title: "Movie\nWith\nNewlines" });
       const { container } = render(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
 
-      const titleElement = container.querySelector('h3');
+      const titleElement = container.querySelector("h3");
       expect(titleElement).toBeInTheDocument();
       expect(titleElement?.textContent).toBe("Movie\nWith\nNewlines");
     });
@@ -430,8 +429,8 @@ describe("WatchedItemRow Component", () => {
       const item = createMockItem();
       const { container } = render(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
 
-      const mediaIcon = container.querySelector('.flex-shrink-0 svg');
-      expect(mediaIcon).toHaveAttribute('aria-hidden', 'true');
+      const mediaIcon = container.querySelector(".flex-shrink-0 svg");
+      expect(mediaIcon).toHaveAttribute("aria-hidden", "true");
     });
 
     it("should be keyboard accessible - delete button", async () => {
@@ -440,13 +439,13 @@ describe("WatchedItemRow Component", () => {
       render(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
 
       const deleteButton = screen.getByRole("button");
-      
+
       // Focus the button
       deleteButton.focus();
       expect(deleteButton).toHaveFocus();
 
       // Press Enter
-      await user.keyboard('{Enter}');
+      await user.keyboard("{Enter}");
       expect(mockOnDelete).toHaveBeenCalledWith(item.id);
     });
 
@@ -456,10 +455,10 @@ describe("WatchedItemRow Component", () => {
       render(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
 
       const deleteButton = screen.getByRole("button");
-      
+
       deleteButton.focus();
-      await user.keyboard(' ');
-      
+      await user.keyboard(" ");
+
       expect(mockOnDelete).toHaveBeenCalledWith(item.id);
     });
   });
@@ -467,6 +466,7 @@ describe("WatchedItemRow Component", () => {
   describe("CSS Classes and Styling", () => {
     it("should have correct container classes", () => {
       const item = createMockItem();
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { container } = render(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
 
       const listItem = screen.getByRole("listitem");
@@ -475,6 +475,7 @@ describe("WatchedItemRow Component", () => {
 
     it("should have border classes except on last item", () => {
       const item = createMockItem();
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { container } = render(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
 
       const listItem = screen.getByRole("listitem");
@@ -536,6 +537,7 @@ describe("WatchedItemRow Component", () => {
 
     it("should use capitalize class on media type text", () => {
       const item = createMockItem();
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { container } = render(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
 
       const mediaTypeText = screen.getByText(/film|serial/i);
@@ -554,8 +556,8 @@ describe("WatchedItemRow Component", () => {
       const item = createMockItem({ isDeleting: true });
       const { container } = render(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
 
-      const trashIcon = container.querySelector('svg.lucide-trash-2');
-      expect(trashIcon).toHaveClass('animate-pulse');
+      const trashIcon = container.querySelector("svg.lucide-trash-2");
+      expect(trashIcon).toHaveClass("animate-pulse");
     });
   });
 
@@ -576,7 +578,7 @@ describe("WatchedItemRow Component", () => {
       expect(screen.getByText("Fight Club")).toBeInTheDocument();
       expect(screen.getByText("1999")).toBeInTheDocument();
       expect(screen.getByText("Film")).toBeInTheDocument();
-      
+
       const deleteButton = screen.getByRole("button");
       expect(deleteButton).toHaveAttribute("aria-label");
       expect(deleteButton.getAttribute("aria-label")).toContain("Fight Club z historii");
@@ -598,7 +600,7 @@ describe("WatchedItemRow Component", () => {
       expect(screen.getByText("Breaking Bad")).toBeInTheDocument();
       expect(screen.getByText("2008")).toBeInTheDocument();
       expect(screen.getByText("Serial")).toBeInTheDocument();
-      
+
       const deleteButton = screen.getByRole("button");
       expect(deleteButton).toHaveAttribute("aria-label");
       expect(deleteButton.getAttribute("aria-label")).toContain("Breaking Bad z historii");
@@ -619,11 +621,10 @@ describe("WatchedItemRow Component", () => {
 
     it("should handle delete operation flow - start to finish", async () => {
       const user = userEvent.setup();
-      let isDeleting = false;
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const handleDelete = vi.fn().mockImplementation(async (id: string) => {
-        isDeleting = true;
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
         isDeleting = false;
       });
 
@@ -634,7 +635,7 @@ describe("WatchedItemRow Component", () => {
       await user.click(deleteButton);
 
       expect(handleDelete).toHaveBeenCalledWith("item-to-delete");
-      
+
       await waitFor(() => {
         expect(handleDelete).toHaveReturned();
       });
@@ -678,7 +679,7 @@ describe("WatchedItemRow Component", () => {
       for (const item of items) {
         mockOnDelete.mockClear();
         const { unmount } = render(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
-        
+
         const deleteButton = screen.getByRole("button");
         await user.click(deleteButton);
 
@@ -695,7 +696,7 @@ describe("WatchedItemRow Component", () => {
 
       for (const item of movieItems) {
         const { container } = render(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
-        const icon = container.querySelector('svg.lucide-film');
+        const icon = container.querySelector("svg.lucide-film");
         expect(icon).toBeInTheDocument();
       }
     });
@@ -705,18 +706,18 @@ describe("WatchedItemRow Component", () => {
       const { container: container1 } = render(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
       const { container: container2 } = render(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
 
-      const icon1 = container1.querySelector('svg.lucide-trash-2');
-      const icon2 = container2.querySelector('svg.lucide-trash-2');
+      const icon1 = container1.querySelector("svg.lucide-trash-2");
+      const icon2 = container2.querySelector("svg.lucide-trash-2");
 
-      expect(icon1).toHaveClass('animate-pulse');
-      expect(icon2).toHaveClass('animate-pulse');
+      expect(icon1).toHaveClass("animate-pulse");
+      expect(icon2).toHaveClass("animate-pulse");
     });
   });
 
   describe("Error Handling", () => {
     it("should call onDelete even if it will reject", async () => {
       const user = userEvent.setup();
-      
+
       // Component doesn't handle errors - they bubble up to parent
       // We just verify the function is called, not error handling
       const errorDelete = vi.fn().mockImplementation(async () => {
@@ -724,13 +725,13 @@ describe("WatchedItemRow Component", () => {
         // but don't actually throw to avoid unhandled rejection in tests
         return Promise.resolve();
       });
-      
+
       const item = createMockItem();
       render(<WatchedItemRow item={item} onDelete={errorDelete} />);
 
       const deleteButton = screen.getByRole("button");
       await user.click(deleteButton);
-      
+
       // Verify the callback was invoked - error handling is parent's concern
       expect(errorDelete).toHaveBeenCalledWith(item.id);
     });
@@ -755,8 +756,9 @@ describe("WatchedItemRow Component", () => {
       const item = createMockItem();
       const { rerender } = render(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const renderSpy = vi.fn();
-      
+
       // Rerender with same props
       rerender(<WatchedItemRow item={item} onDelete={mockOnDelete} />);
       rerender(<WatchedItemRow item={item} onDelete={mockOnDelete} />);

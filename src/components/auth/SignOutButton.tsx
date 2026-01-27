@@ -57,13 +57,7 @@ export function SignOutButton({
   };
 
   return (
-    <Button
-      variant={variant}
-      size={size}
-      onClick={handleSignOut}
-      disabled={isSigningOut}
-      {...props}
-    >
+    <Button variant={variant} size={size} onClick={handleSignOut} disabled={isSigningOut} {...props}>
       {isSigningOut ? (
         <>
           <Loader2 className="animate-spin" />

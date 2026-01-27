@@ -1,4 +1,4 @@
-import { Locator, Page } from '@playwright/test';
+import { Locator, Page } from "@playwright/test";
 
 /**
  * Page Object Model for Register Page
@@ -31,14 +31,14 @@ export class RegisterPage {
    * Navigate to the registration page
    */
   async goto() {
-    await this.page.goto('/auth/register');
+    await this.page.goto("/auth/register");
   }
 
   /**
    * Wait for the registration form to load
    */
   async waitForPageLoad() {
-    await this.registerForm.waitFor({ state: 'visible' });
+    await this.registerForm.waitFor({ state: "visible" });
   }
 
   /**
@@ -95,24 +95,24 @@ export class RegisterPage {
    * By default, waits for redirect to /onboarding/platforms
    * Checks for errors before waiting for redirect
    */
-  async waitForRegisterSuccess(expectedUrl: string = '**/onboarding/platforms') {
+  async waitForRegisterSuccess(expectedUrl = "**/onboarding/platforms") {
     // Wait a bit for either error message, success message, or navigation
     await this.page.waitForTimeout(1000);
-    
+
     // Check if there's an error message
     const hasError = await this.hasErrorMessage();
     if (hasError) {
       const errorText = await this.getErrorMessage();
       throw new Error(`Registration failed: ${errorText}`);
     }
-    
+
     // Check if there's a success message (email confirmation required)
     const hasSuccess = await this.hasSuccessMessage();
     if (hasSuccess) {
       // Email confirmation is required, no redirect will happen
       return;
     }
-    
+
     // Wait for navigation with increased timeout (auto-login successful)
     await this.page.waitForURL(expectedUrl, { timeout: 15000 });
   }
@@ -132,7 +132,7 @@ export class RegisterPage {
    * Get error message text
    */
   async getErrorMessage(): Promise<string> {
-    return await this.errorMessage.textContent() || '';
+    return (await this.errorMessage.textContent()) || "";
   }
 
   /**
@@ -150,7 +150,7 @@ export class RegisterPage {
    * Get success message text
    */
   async getSuccessMessage(): Promise<string> {
-    return await this.successMessage.textContent() || '';
+    return (await this.successMessage.textContent()) || "";
   }
 
   /**
@@ -171,10 +171,10 @@ export class RegisterPage {
    * Complete registration flow: goto → fill → submit → wait for redirect
    */
   async registerAndWaitForSuccess(
-    email: string, 
-    password: string, 
+    email: string,
+    password: string,
     confirmPassword?: string,
-    expectedUrl: string = '**/onboarding/platforms'
+    expectedUrl = "**/onboarding/platforms"
   ) {
     await this.gotoAndWaitForLoad();
     await this.register(email, password, confirmPassword);

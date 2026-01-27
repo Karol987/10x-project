@@ -42,7 +42,7 @@ export function UpdatePasswordForm({ onSubmit }: UpdatePasswordFormProps) {
     if (!/\d/.test(value)) {
       return "Hasło musi zawierać przynajmniej jedną cyfrę";
     }
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(value)) {
+    if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(value)) {
       return "Hasło musi zawierać przynajmniej jeden znak specjalny";
     }
     return undefined;
@@ -62,7 +62,7 @@ export function UpdatePasswordForm({ onSubmit }: UpdatePasswordFormProps) {
   const passwordChecks = {
     length: password.length >= 8,
     digit: /\d/.test(password),
-    special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
+    special: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password),
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -94,7 +94,7 @@ export function UpdatePasswordForm({ onSubmit }: UpdatePasswordFormProps) {
         console.log("Password update successful");
       }
       setIsSuccess(true);
-    } catch (error) {
+    } catch {
       setErrors({
         general: "Nie udało się zaktualizować hasła. Link mógł wygasnąć.",
       });
@@ -137,10 +137,7 @@ export function UpdatePasswordForm({ onSubmit }: UpdatePasswordFormProps) {
           {/* General error message */}
           {errors.general && (
             <div
-              className={cn(
-                "p-3 rounded-lg bg-destructive/10 border border-destructive/20",
-                "dark:bg-destructive/20"
-              )}
+              className={cn("p-3 rounded-lg bg-destructive/10 border border-destructive/20", "dark:bg-destructive/20")}
               role="alert"
               aria-live="assertive"
             >
@@ -162,13 +159,10 @@ export function UpdatePasswordForm({ onSubmit }: UpdatePasswordFormProps) {
               onChange={(e) => setPassword(e.target.value)}
               aria-invalid={!!errors.password}
               aria-describedby={
-                errors.password
-                  ? `${passwordId}-error ${passwordId}-requirements`
-                  : `${passwordId}-requirements`
+                errors.password ? `${passwordId}-error ${passwordId}-requirements` : `${passwordId}-requirements`
               }
               disabled={isSubmitting}
               autoComplete="new-password"
-              autoFocus
             />
             {errors.password && (
               <p id={`${passwordId}-error`} className="text-sm text-destructive" role="alert">

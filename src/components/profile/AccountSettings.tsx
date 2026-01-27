@@ -14,7 +14,7 @@ interface AccountSettingsProps {
 /**
  * Account settings section for the profile page.
  * Includes sign out button and delete account dialog (danger zone).
- * 
+ *
  * Example usage in ProfileContainer:
  * ```tsx
  * <AccountSettings userEmail="user@example.com" />
@@ -72,9 +72,7 @@ export function AccountSettings({ userEmail = "user@example.com" }: AccountSetti
               <AlertTriangle className="size-4" />
               Strefa niebezpieczna
             </CardTitle>
-            <CardDescription>
-              Nieodwracalne działania związane z Twoim kontem
-            </CardDescription>
+            <CardDescription>Nieodwracalne działania związane z Twoim kontem</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">

@@ -1,5 +1,5 @@
-import { setupWorker } from 'msw/browser';
-import { handlers } from './handlers';
+import { setupWorker } from "msw/browser";
+import { handlers } from "./handlers";
 
 /**
  * MSW Worker for browser environment (used in E2E tests)

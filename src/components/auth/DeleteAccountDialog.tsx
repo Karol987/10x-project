@@ -69,12 +69,8 @@ export function DeleteAccountDialog({ onDelete, usePasswordConfirmation = false 
       // On success, close dialog and potentially redirect
       setOpen(false);
       setConfirmationText("");
-    } catch (error) {
-      setError(
-        usePasswordConfirmation
-          ? "Nieprawidłowe hasło"
-          : "Nie udało się usunąć konta. Spróbuj ponownie."
-      );
+    } catch {
+      setError(usePasswordConfirmation ? "Nieprawidłowe hasło" : "Nie udało się usunąć konta. Spróbuj ponownie.");
     } finally {
       setIsDeleting(false);
     }
@@ -107,9 +103,7 @@ export function DeleteAccountDialog({ onDelete, usePasswordConfirmation = false 
           </DialogTitle>
           <DialogDescription className="space-y-3 pt-2">
             <p className="font-semibold">To działanie jest nieodwracalne!</p>
-            <p>
-              Usunięcie konta spowoduje trwałe usunięcie wszystkich Twoich danych, w tym:
-            </p>
+            <p>Usunięcie konta spowoduje trwałe usunięcie wszystkich Twoich danych, w tym:</p>
             <ul className="list-disc list-inside space-y-1 text-sm">
               <li>Profilu użytkownika</li>
               <li>Wybranych platform streamingowych</li>
@@ -124,10 +118,7 @@ export function DeleteAccountDialog({ onDelete, usePasswordConfirmation = false 
           {/* Error message */}
           {error && (
             <div
-              className={cn(
-                "p-3 rounded-lg bg-destructive/10 border border-destructive/20",
-                "dark:bg-destructive/20"
-              )}
+              className={cn("p-3 rounded-lg bg-destructive/10 border border-destructive/20", "dark:bg-destructive/20")}
               role="alert"
               aria-live="assertive"
             >

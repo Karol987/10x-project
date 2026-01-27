@@ -102,13 +102,13 @@ export class PlatformsService {
    * @throws Error if database operation fails (including FK constraint violations)
    */
   async replaceUserPlatforms(userId: UUID, platformIds: UUID[]): Promise<PlatformDTO[]> {
-    console.log('DEBUG: replaceUserPlatforms', { userId, platformIds });
-    
+    console.log("DEBUG: replaceUserPlatforms", { userId, platformIds });
+
     // Step 1: Delete all existing user platforms
     const { error: deleteError } = await this.supabase.from("user_platforms").delete().eq("user_id", userId);
 
     if (deleteError) {
-      console.error('DEBUG: Delete error', deleteError);
+      console.error("DEBUG: Delete error", deleteError);
       throw new Error(`Failed to delete existing user platforms: ${deleteError.message}`);
     }
 
@@ -119,11 +119,11 @@ export class PlatformsService {
         platform_id: platformId,
       }));
 
-      console.log('DEBUG: Inserting data', insertData);
+      console.log("DEBUG: Inserting data", insertData);
       const { error: insertError } = await this.supabase.from("user_platforms").insert(insertData);
 
       if (insertError) {
-        console.error('DEBUG: Insert error', insertError);
+        console.error("DEBUG: Insert error", insertError);
         // FK constraint violation means invalid platform ID was provided
         if (insertError.code === "23503") {
           throw new Error("One or more platform IDs are invalid");

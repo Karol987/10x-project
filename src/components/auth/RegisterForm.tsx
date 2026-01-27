@@ -72,7 +72,7 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
     if (!/\d/.test(value)) {
       return "Hasło musi zawierać przynajmniej jedną cyfrę";
     }
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(value)) {
+    if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(value)) {
       return "Hasło musi zawierać przynajmniej jeden znak specjalny";
     }
     return undefined;
@@ -92,7 +92,7 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
   const passwordChecks = {
     length: password.length >= 8,
     digit: /\d/.test(password),
-    special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
+    special: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password),
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -157,7 +157,7 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
           // Show success message about email confirmation
           setSuccessMessage(
             data.message ||
-              "Konto zostało utworzone. Sprawdź swoją skrzynkę pocztową i kliknij w link potwierdzający, aby aktywować konto.",
+              "Konto zostało utworzone. Sprawdź swoją skrzynkę pocztową i kliknij w link potwierdzający, aby aktywować konto."
           );
           // Clear form fields
           setEmail("");
@@ -171,8 +171,7 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
     } catch (error) {
       console.error("Registration error:", error);
       setErrors({
-        general:
-          "Wystąpił błąd podczas rejestracji. Sprawdź połączenie internetowe i spróbuj ponownie.",
+        general: "Wystąpił błąd podczas rejestracji. Sprawdź połączenie internetowe i spróbuj ponownie.",
       });
     } finally {
       setIsSubmitting(false);
@@ -209,10 +208,7 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
           {errors.general && (
             <div
               data-test-id="register-error-message"
-              className={cn(
-                "p-3 rounded-lg bg-destructive/10 border border-destructive/20",
-                "dark:bg-destructive/20"
-              )}
+              className={cn("p-3 rounded-lg bg-destructive/10 border border-destructive/20", "dark:bg-destructive/20")}
               role="alert"
               aria-live="assertive"
             >
@@ -255,7 +251,9 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               aria-invalid={!!errors.password}
-              aria-describedby={errors.password ? `${passwordId}-error ${passwordId}-requirements` : `${passwordId}-requirements`}
+              aria-describedby={
+                errors.password ? `${passwordId}-error ${passwordId}-requirements` : `${passwordId}-requirements`
+              }
               disabled={isSubmitting}
               autoComplete="new-password"
               data-test-id="register-password-input"
@@ -265,20 +263,35 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
                 {errors.password}
               </p>
             )}
-            
+
             {/* Password requirements */}
             <div id={`${passwordId}-requirements`} className="space-y-1.5 text-sm">
               <p className="text-muted-foreground">Hasło musi zawierać:</p>
               <ul className="space-y-1">
-                <li className={cn("flex items-center gap-2", passwordChecks.length ? "text-green-600 dark:text-green-500" : "text-muted-foreground")}>
+                <li
+                  className={cn(
+                    "flex items-center gap-2",
+                    passwordChecks.length ? "text-green-600 dark:text-green-500" : "text-muted-foreground"
+                  )}
+                >
                   <Check className={cn("size-3", passwordChecks.length ? "opacity-100" : "opacity-30")} />
                   <span>Minimum 8 znaków</span>
                 </li>
-                <li className={cn("flex items-center gap-2", passwordChecks.digit ? "text-green-600 dark:text-green-500" : "text-muted-foreground")}>
+                <li
+                  className={cn(
+                    "flex items-center gap-2",
+                    passwordChecks.digit ? "text-green-600 dark:text-green-500" : "text-muted-foreground"
+                  )}
+                >
                   <Check className={cn("size-3", passwordChecks.digit ? "opacity-100" : "opacity-30")} />
                   <span>Przynajmniej jedną cyfrę</span>
                 </li>
-                <li className={cn("flex items-center gap-2", passwordChecks.special ? "text-green-600 dark:text-green-500" : "text-muted-foreground")}>
+                <li
+                  className={cn(
+                    "flex items-center gap-2",
+                    passwordChecks.special ? "text-green-600 dark:text-green-500" : "text-muted-foreground"
+                  )}
+                >
                   <Check className={cn("size-3", passwordChecks.special ? "opacity-100" : "opacity-30")} />
                   <span>Przynajmniej jeden znak specjalny</span>
                 </li>

@@ -3,14 +3,14 @@ import { RegisterPage } from "./pages/auth";
 
 /**
  * E2E Test: Registration Flow
- * 
+ *
  * Scenario:
  * 1. Navigate to registration page
  * 2. Fill in randomly generated email and password
  * 3. Fill in password confirmation
  * 4. Submit registration form
  * 5. Verify successful registration
- * 
+ *
  * Note: Each test generates unique credentials to avoid conflicts
  */
 
@@ -31,26 +31,29 @@ function generateRandomEmail(): string {
  */
 function generateRandomPassword(): string {
   const length = 12;
-  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const lowercase = 'abcdefghijklmnopqrstuvwxyz';
-  const digits = '0123456789';
-  const special = '!@#$%^&*()_+-=[]{}';
-  
+  const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const lowercase = "abcdefghijklmnopqrstuvwxyz";
+  const digits = "0123456789";
+  const special = "!@#$%^&*()_+-=[]{}";
+
   // Ensure at least one of each required type
-  let password = '';
+  let password = "";
   password += uppercase[Math.floor(Math.random() * uppercase.length)];
   password += lowercase[Math.floor(Math.random() * lowercase.length)];
   password += digits[Math.floor(Math.random() * digits.length)];
   password += special[Math.floor(Math.random() * special.length)];
-  
+
   // Fill the rest randomly
   const allChars = uppercase + lowercase + digits + special;
   for (let i = password.length; i < length; i++) {
     password += allChars[Math.floor(Math.random() * allChars.length)];
   }
-  
+
   // Shuffle the password
-  return password.split('').sort(() => Math.random() - 0.5).join('');
+  return password
+    .split("")
+    .sort(() => Math.random() - 0.5)
+    .join("");
 }
 
 test.describe("Registration Flow", () => {
@@ -74,7 +77,7 @@ test.describe("Registration Flow", () => {
     // STEP 2: Verify form elements are visible
     // ============================================================
     console.log("Step 2: Verifying form elements...");
-    
+
     await expect(registerPage.registerForm).toBeVisible();
     console.log("✓ Registration form is visible");
 
@@ -99,7 +102,7 @@ test.describe("Registration Flow", () => {
     // Generate random credentials
     const testEmail = generateRandomEmail();
     const testPassword = generateRandomPassword();
-    
+
     // Initialize Page Object
     registerPage = new RegisterPage(page);
 
@@ -114,7 +117,7 @@ test.describe("Registration Flow", () => {
     // ============================================================
     console.log("Step 2: Filling in email...");
     await registerPage.fillEmail(testEmail);
-    
+
     // Verify email is filled
     await expect(registerPage.emailInput).toHaveValue(testEmail);
     console.log(`✓ Email filled: ${testEmail}`);
@@ -124,7 +127,7 @@ test.describe("Registration Flow", () => {
     // ============================================================
     console.log("Step 3: Filling in password...");
     await registerPage.fillPassword(testPassword);
-    
+
     // Verify password is filled (check for non-empty value)
     const passwordValue = await registerPage.passwordInput.inputValue();
     expect(passwordValue.length).toBeGreaterThan(0);
@@ -135,7 +138,7 @@ test.describe("Registration Flow", () => {
     // ============================================================
     console.log("Step 4: Filling in password confirmation...");
     await registerPage.fillConfirmPassword(testPassword);
-    
+
     // Verify confirm password is filled
     const confirmPasswordValue = await registerPage.confirmPasswordInput.inputValue();
     expect(confirmPasswordValue.length).toBeGreaterThan(0);
@@ -153,7 +156,7 @@ test.describe("Registration Flow", () => {
     // Generate random credentials
     const testEmail = generateRandomEmail();
     const testPassword = generateRandomPassword();
-    
+
     // Initialize Page Object
     registerPage = new RegisterPage(page);
 
@@ -184,16 +187,16 @@ test.describe("Registration Flow", () => {
     // STEP 4: Verify successful registration
     // ============================================================
     console.log("Step 5: Checking registration result...");
-    
+
     // Check if there's an error message (unexpected)
     const hasError = await registerPage.hasErrorMessage();
-    
+
     // Check if there's a success message (email confirmation required)
     const hasSuccess = await registerPage.hasSuccessMessage();
-    
+
     // Check if redirected (auto-login successful)
     const currentUrl = page.url();
-    const isRedirected = currentUrl.includes('/onboarding/platforms') || currentUrl.includes('/home');
+    const isRedirected = currentUrl.includes("/onboarding/platforms") || currentUrl.includes("/home");
 
     if (hasError) {
       const errorText = await registerPage.getErrorMessage();
@@ -205,7 +208,7 @@ test.describe("Registration Flow", () => {
       const successText = await registerPage.getSuccessMessage();
       console.log(`✓ Success message displayed: ${successText}`);
       expect(successText.length).toBeGreaterThan(0);
-      
+
       // Verify we're still on registration page (email confirmation required)
       await expect(page).toHaveURL(/\/auth\/register/);
       console.log("✓ User remains on registration page (email confirmation required)");
@@ -226,7 +229,7 @@ test.describe("Registration Flow", () => {
     const testEmail = generateRandomEmail();
     const testPassword = generateRandomPassword();
     const differentPassword = generateRandomPassword(); // Different password
-    
+
     // Initialize Page Object
     registerPage = new RegisterPage(page);
 
@@ -265,7 +268,7 @@ test.describe("Registration Flow", () => {
     console.log("Step 5: Verifying validation error...");
     await expect(page).toHaveURL(/\/auth\/register/);
     console.log("✓ User remains on registration page due to validation error");
-    
+
     // Note: Client-side validation errors are shown inline, not in the general error message
     // The form should not submit if passwords don't match
   });
@@ -274,13 +277,13 @@ test.describe("Registration Flow", () => {
     // Use existing credentials from .env.test to test error handling
     const E2E_USERNAME = process.env.E2E_USERNAME || "";
     const E2E_PASSWORD = process.env.E2E_PASSWORD || "";
-    
+
     // Skip if credentials not available
     if (!E2E_USERNAME || !E2E_PASSWORD) {
       test.skip(true, "E2E_USERNAME or E2E_PASSWORD not set - skipping existing user test");
       return;
     }
-    
+
     // Initialize Page Object
     registerPage = new RegisterPage(page);
 
@@ -304,14 +307,14 @@ test.describe("Registration Flow", () => {
     // STEP 3: Verify error handling
     // ============================================================
     console.log("Step 4: Checking for error message...");
-    
+
     const hasError = await registerPage.hasErrorMessage();
-    
+
     if (hasError) {
       const errorText = await registerPage.getErrorMessage();
       console.log(`✓ Error handling works correctly: ${errorText}`);
       expect(errorText.length).toBeGreaterThan(0);
-      
+
       // Verify we're still on registration page
       await expect(page).toHaveURL(/\/auth\/register/);
       console.log("✓ User remains on registration page after error");

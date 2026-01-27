@@ -12,10 +12,13 @@ describe("UserMenu - handleLogout()", () => {
     window.location = { href: "" } as Location;
 
     // Mock console methods to suppress expected errors in tests
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     vi.spyOn(console, "error").mockImplementation(() => {});
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     vi.spyOn(console, "log").mockImplementation(() => {});
 
     // Mock window.alert
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     vi.spyOn(window, "alert").mockImplementation(() => {});
   });
 
@@ -106,6 +109,7 @@ describe("UserMenu - handleLogout()", () => {
       expect(loadingButton).toBeDisabled();
 
       // Cleanup - Resolve the promise
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       resolveLogout!({
         ok: true,
         json: async () => ({ success: true }),
@@ -139,6 +143,7 @@ describe("UserMenu - handleLogout()", () => {
       });
 
       // Cleanup
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       resolveLogout!({
         ok: true,
         json: async () => ({ success: true }),
@@ -150,12 +155,13 @@ describe("UserMenu - handleLogout()", () => {
       const user = userEvent.setup();
       let resolveFetch: () => void;
       const fetchPromise = new Promise<Response>((resolve) => {
-        resolveFetch = () => resolve({
-          ok: true,
-          json: async () => ({ success: true }),
-        } as Response);
+        resolveFetch = () =>
+          resolve({
+            ok: true,
+            json: async () => ({ success: true }),
+          } as Response);
       });
-      
+
       const mockFetch = vi.fn().mockReturnValue(fetchPromise);
       global.fetch = mockFetch;
 
@@ -169,7 +175,7 @@ describe("UserMenu - handleLogout()", () => {
 
       // Click first time
       const clickPromise = user.click(logoutButton);
-      
+
       // Verify button becomes disabled (loading state)
       await waitFor(() => {
         const button = screen.getByText("Wylogowywanie...");
@@ -178,8 +184,9 @@ describe("UserMenu - handleLogout()", () => {
 
       // Assert - Should only make one API call even with loading state
       expect(mockFetch).toHaveBeenCalledTimes(1);
-      
+
       // Cleanup - resolve the promise
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       resolveFetch!();
       await clickPromise;
     });
@@ -189,6 +196,7 @@ describe("UserMenu - handleLogout()", () => {
     it("should show error alert when API returns non-ok response", async () => {
       // Arrange
       const user = userEvent.setup();
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       const mockAlert = vi.spyOn(window, "alert").mockImplementation(() => {});
 
       global.fetch = vi.fn().mockResolvedValue({
@@ -209,9 +217,7 @@ describe("UserMenu - handleLogout()", () => {
       // Assert
       await waitFor(
         () => {
-          expect(mockAlert).toHaveBeenCalledWith(
-            "Wystąpił błąd podczas wylogowywania. Spróbuj ponownie."
-          );
+          expect(mockAlert).toHaveBeenCalledWith("Wystąpił błąd podczas wylogowywania. Spróbuj ponownie.");
         },
         { timeout: 3000 }
       );
@@ -240,10 +246,7 @@ describe("UserMenu - handleLogout()", () => {
 
       // Assert
       await waitFor(() => {
-        expect(mockConsoleError).toHaveBeenCalledWith(
-          "Logout failed:",
-          "INVALID_SESSION"
-        );
+        expect(mockConsoleError).toHaveBeenCalledWith("Logout failed:", "INVALID_SESSION");
       });
     });
 
@@ -310,6 +313,7 @@ describe("UserMenu - handleLogout()", () => {
     it("should handle network failure gracefully", async () => {
       // Arrange
       const user = userEvent.setup();
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       const mockAlert = vi.spyOn(window, "alert").mockImplementation(() => {});
 
       global.fetch = vi.fn().mockRejectedValue(new Error("Network error"));
@@ -326,9 +330,7 @@ describe("UserMenu - handleLogout()", () => {
       // Assert
       await waitFor(
         () => {
-          expect(mockAlert).toHaveBeenCalledWith(
-            "Wystąpił błąd podczas wylogowywania. Spróbuj ponownie."
-          );
+          expect(mockAlert).toHaveBeenCalledWith("Wystąpił błąd podczas wylogowywania. Spróbuj ponownie.");
         },
         { timeout: 3000 }
       );
@@ -360,6 +362,7 @@ describe("UserMenu - handleLogout()", () => {
     it("should handle fetch timeout", async () => {
       // Arrange
       const user = userEvent.setup();
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       const mockAlert = vi.spyOn(window, "alert").mockImplementation(() => {});
 
       global.fetch = vi.fn().mockRejectedValue(new Error("Request timeout"));
@@ -385,6 +388,7 @@ describe("UserMenu - handleLogout()", () => {
     it("should handle malformed JSON response", async () => {
       // Arrange
       const user = userEvent.setup();
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       const mockAlert = vi.spyOn(window, "alert").mockImplementation(() => {});
 
       global.fetch = vi.fn().mockResolvedValue({
@@ -569,10 +573,7 @@ describe("UserMenu - handleLogout()", () => {
 
       // Assert
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith(
-          "/api/auth/logout",
-          expect.any(Object)
-        );
+        expect(mockFetch).toHaveBeenCalledWith("/api/auth/logout", expect.any(Object));
       });
     });
 
@@ -715,6 +716,7 @@ describe("UserMenu - handleLogout()", () => {
     it("should handle error scenarios consistently", async () => {
       // Arrange
       const user = userEvent.setup();
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       const mockAlert = vi.spyOn(window, "alert").mockImplementation(() => {});
 
       global.fetch = vi.fn().mockRejectedValue(new Error("Network error"));
@@ -774,9 +776,7 @@ describe("UserMenu - handleLogout()", () => {
 
         // Assert - All should show same error message
         await waitFor(() => {
-          expect(window.alert).toHaveBeenCalledWith(
-            "Wystąpił błąd podczas wylogowywania. Spróbuj ponownie."
-          );
+          expect(window.alert).toHaveBeenCalledWith("Wystąpił błąd podczas wylogowywania. Spróbuj ponownie.");
         });
 
         unmount();

@@ -147,4 +147,3 @@ export function useInfiniteHistory(): UseInfiniteHistoryReturn {
     retry,
   };
 }
-

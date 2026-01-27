@@ -46,11 +46,11 @@ export const CreatorIdOrExternalIdSchema = z.object({
       // Check if it's a UUID
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (uuidRegex.test(val)) return true;
-      
+
       // Check if it's an external ID (tmdb-{id})
       const externalIdRegex = /^tmdb-\d+$/;
       if (externalIdRegex.test(val)) return true;
-      
+
       return false;
     },
     { message: "ID must be either a valid UUID or external ID in format 'tmdb-{id}'" }

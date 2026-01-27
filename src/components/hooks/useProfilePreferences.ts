@@ -127,7 +127,7 @@ export function useProfilePreferences() {
     mutationFn: async (creator: CreatorDTO) => {
       // Determine if ID is UUID (from database) or external ID (from TMDb API)
       const isExternalId = creator.id.startsWith("tmdb-");
-      
+
       // Prepare payload based on ID format
       const payload: AddUserCreatorCommand | AddUserCreatorFromExternalApiCommand = isExternalId
         ? {

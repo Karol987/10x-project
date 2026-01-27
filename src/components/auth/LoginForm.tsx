@@ -136,10 +136,7 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
           {errors.general && (
             <div
               data-test-id="login-error-message"
-              className={cn(
-                "p-3 rounded-lg bg-destructive/10 border border-destructive/20",
-                "dark:bg-destructive/20"
-              )}
+              className={cn("p-3 rounded-lg bg-destructive/10 border border-destructive/20", "dark:bg-destructive/20")}
               role="alert"
               aria-live="assertive"
             >

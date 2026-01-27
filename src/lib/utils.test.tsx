@@ -18,12 +18,14 @@ describe("utils - cn()", () => {
     });
 
     it("should handle conditional classes", () => {
-      const result = cn("base-class", true && "conditional-class");
+      const condition = true;
+      const result = cn("base-class", condition && "conditional-class");
       expect(result).toBe("base-class conditional-class");
     });
 
     it("should filter out falsy values", () => {
-      const result = cn("base-class", false && "should-not-appear", null, undefined);
+      const condition = false;
+      const result = cn("base-class", condition && "should-not-appear", null, undefined);
       expect(result).toBe("base-class");
     });
 
@@ -80,8 +82,7 @@ describe("utils - cn()", () => {
     });
 
     it("should handle very long class strings", () => {
-      const longClass =
-        "class1 class2 class3 class4 class5 class6 class7 class8 class9 class10";
+      const longClass = "class1 class2 class3 class4 class5 class6 class7 class8 class9 class10";
       const result = cn(longClass);
       expect(result).toBe(longClass);
     });
@@ -136,12 +137,7 @@ describe("utils - cn()", () => {
     });
 
     it("should be deterministic with complex inputs", () => {
-      const input = [
-        "base",
-        { active: true, disabled: false },
-        ["array-class"],
-        "end",
-      ];
+      const input = ["base", { active: true, disabled: false }, ["array-class"], "end"];
       const result1 = cn(...input);
       const result2 = cn(...input);
       expect(result1).toBe(result2);
@@ -354,9 +350,7 @@ describe("utils - jsonResponse()", () => {
       const response2 = jsonResponse(data, 200);
 
       expect(response1.status).toBe(response2.status);
-      expect(response1.headers.get("Content-Type")).toBe(
-        response2.headers.get("Content-Type")
-      );
+      expect(response1.headers.get("Content-Type")).toBe(response2.headers.get("Content-Type"));
     });
 
     it("should serialize data consistently", async () => {
@@ -387,11 +381,7 @@ describe("utils - errorResponse()", () => {
     });
 
     it("should create error response with error and message", () => {
-      const response = errorResponse(
-        "INVALID_REQUEST",
-        400,
-        "The request is invalid"
-      );
+      const response = errorResponse("INVALID_REQUEST", 400, "The request is invalid");
 
       expect(response).toBeInstanceOf(Response);
       expect(response.status).toBe(400);
@@ -399,12 +389,7 @@ describe("utils - errorResponse()", () => {
 
     it("should create error response with all parameters", () => {
       const details = { field: "email", reason: "invalid format" };
-      const response = errorResponse(
-        "VALIDATION_ERROR",
-        400,
-        "Validation failed",
-        details
-      );
+      const response = errorResponse("VALIDATION_ERROR", 400, "Validation failed", details);
 
       expect(response).toBeInstanceOf(Response);
       expect(response.status).toBe(400);
@@ -570,12 +555,7 @@ describe("utils - errorResponse()", () => {
           { field: "password", code: "TOO_SHORT" },
         ],
       };
-      const response = errorResponse(
-        "VALIDATION_ERROR",
-        422,
-        "Validation failed",
-        details
-      );
+      const response = errorResponse("VALIDATION_ERROR", 422, "Validation failed", details);
       const body: ErrorResponse = await response.json();
 
       expect(body.error).toBe("VALIDATION_ERROR");
@@ -584,11 +564,7 @@ describe("utils - errorResponse()", () => {
     });
 
     it("should handle authentication error pattern", async () => {
-      const response = errorResponse(
-        "UNAUTHORIZED",
-        401,
-        "Invalid credentials"
-      );
+      const response = errorResponse("UNAUTHORIZED", 401, "Invalid credentials");
       const body: ErrorResponse = await response.json();
 
       expect(body.error).toBe("UNAUTHORIZED");
@@ -624,12 +600,7 @@ describe("utils - errorResponse()", () => {
 
     it("should have correct body structure with all fields", async () => {
       const details = { test: "data" };
-      const response = errorResponse(
-        "TEST_ERROR",
-        400,
-        "Test message",
-        details
-      );
+      const response = errorResponse("TEST_ERROR", 400, "Test message", details);
       const body: ErrorResponse = await response.json();
 
       expect(body).toHaveProperty("error");

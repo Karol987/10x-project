@@ -69,7 +69,11 @@ export const RecommendationCard = memo(function RecommendationCard({
             <p className="text-xs font-medium text-muted-foreground">Twórcy:</p>
             <div className="flex flex-wrap gap-2">
               {item.creators.map((creator, index) => (
-                <Badge key={`${item.id}-${creator.id}-${index}`} variant={creator.is_favorite ? "default" : "outline"} className="gap-1.5">
+                <Badge
+                  key={`${item.id}-${creator.id}-${index}`}
+                  variant={creator.is_favorite ? "default" : "outline"}
+                  className="gap-1.5"
+                >
                   <span>{creator.name}</span>
                   {creator.creator_role && (
                     <span className="text-[10px] opacity-70">

@@ -16,12 +16,7 @@ interface CreatorListProps {
  * List of selected creators displayed as chips
  * Shows warning if less than 3 creators selected
  */
-export function CreatorList({
-  creators,
-  onRemove,
-  isLoading = false,
-  removingCreatorId,
-}: CreatorListProps) {
+export function CreatorList({ creators, onRemove, isLoading = false, removingCreatorId }: CreatorListProps) {
   // Loading skeleton
   if (isLoading) {
     return (
@@ -56,9 +51,7 @@ export function CreatorList({
           <AlertCircle className="size-5 shrink-0 mt-0.5" aria-hidden="true" />
           <div className="flex-1 text-sm">
             <p className="font-medium">Zalecamy wybrać co najmniej 3 twórców</p>
-            <p className="mt-1 text-xs opacity-90">
-              Im więcej twórców dodasz, tym lepsze będą Twoje rekomendacje.
-            </p>
+            <p className="mt-1 text-xs opacity-90">Im więcej twórców dodasz, tym lepsze będą Twoje rekomendacje.</p>
           </div>
         </div>
       )}
@@ -77,4 +70,3 @@ export function CreatorList({
     </div>
   );
 }
-

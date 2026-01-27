@@ -116,11 +116,13 @@ export const MotnStreamingOptionV2Schema = z.object({
   quality: z.string().optional(),
   audios: z.array(z.any()).optional(),
   subtitles: z.array(z.any()).optional(),
-  price: z.object({
-    amount: z.string(),
-    currency: z.string(),
-    formatted: z.string(),
-  }).optional(),
+  price: z
+    .object({
+      amount: z.string(),
+      currency: z.string(),
+      formatted: z.string(),
+    })
+    .optional(),
   expiresSoon: z.boolean().optional(),
   availableSince: z.number().optional(),
 });
@@ -128,11 +130,11 @@ export const MotnStreamingOptionV2Schema = z.object({
 /**
  * MOTN Show Response
  * Endpoint: GET /shows/{id}
- * 
+ *
  * Note: API can return either:
  * 1. {"result": null} when movie not found
  * 2. Direct show object with itemType, showType, etc.
- * 
+ *
  * New API uses streamingOptions instead of streamingInfo
  */
 export const MotnShowResponseSchema = z.union([

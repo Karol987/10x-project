@@ -82,9 +82,7 @@ export async function markMovieAsWatched(command: WatchedItemCreateCommand): Pro
  * @param params - Pagination parameters (limit, cursor)
  * @returns Paginated response with watched items
  */
-export async function fetchWatchedHistory(
-  params: PaginationQuery = {}
-): Promise<PaginatedResponse<WatchedItemDTO>> {
+export async function fetchWatchedHistory(params: PaginationQuery = {}): Promise<PaginatedResponse<WatchedItemDTO>> {
   const searchParams = new URLSearchParams();
 
   if (params.limit) {

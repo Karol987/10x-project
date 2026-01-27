@@ -14,7 +14,7 @@ const validatePassword = (value: string): string | undefined => {
   if (!/\d/.test(value)) {
     return "Hasło musi zawierać przynajmniej jedną cyfrę";
   }
-  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(value)) {
+  if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(value)) {
     return "Hasło musi zawierać przynajmniej jeden znak specjalny";
   }
   return undefined;
@@ -41,7 +41,7 @@ const validateConfirmPassword = (value: string, passwordValue: string): string |
 const getPasswordChecks = (password: string) => ({
   length: password.length >= 8,
   digit: /\d/.test(password),
-  special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
+  special: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password),
 });
 
 describe("RegisterForm - validatePassword()", () => {

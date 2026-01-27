@@ -66,10 +66,10 @@ export class RecommendationsService {
         .select("creators(external_api_id)")
         .eq("user_id", userId);
 
-      console.log('[RecommendationsService] User creators query result:', { 
+      console.log("[RecommendationsService] User creators query result:", {
         dataLength: userCreators?.length,
         sampleData: userCreators?.slice(0, 3),
-        error: creatorsError 
+        error: creatorsError,
       });
 
       if (creatorsError) {
@@ -83,9 +83,9 @@ export class RecommendationsService {
         .select("platforms(slug)")
         .eq("user_id", userId);
 
-      console.log('[RecommendationsService] User platforms query result:', { 
-        data: userPlatforms, 
-        error: platformsError 
+      console.log("[RecommendationsService] User platforms query result:", {
+        data: userPlatforms,
+        error: platformsError,
       });
 
       if (platformsError) {
@@ -94,20 +94,22 @@ export class RecommendationsService {
       }
 
       // Extract external_api_ids and slugs
-      const creatorExternalIds = userCreators
-        ?.map((uc) => {
-          const creator = uc.creators as { external_api_id: string } | null;
-          return creator?.external_api_id;
-        })
-        .filter((id): id is string => id !== null && id !== undefined) || [];
-      
-      const platformSlugs = userPlatforms
-        ?.map((up) => (up.platforms as { slug: string } | null)?.slug)
-        .filter((slug): slug is PlatformSlug => slug !== null && slug !== undefined) || [];
+      const creatorExternalIds =
+        userCreators
+          ?.map((uc) => {
+            const creator = uc.creators as { external_api_id: string } | null;
+            return creator?.external_api_id;
+          })
+          .filter((id): id is string => id !== null && id !== undefined) || [];
 
-      console.log('[RecommendationsService] Extracted data:', { 
-        creatorExternalIds, 
-        platformSlugs 
+      const platformSlugs =
+        userPlatforms
+          ?.map((up) => (up.platforms as { slug: string } | null)?.slug)
+          .filter((slug): slug is PlatformSlug => slug !== null && slug !== undefined) || [];
+
+      console.log("[RecommendationsService] Extracted data:", {
+        creatorExternalIds,
+        platformSlugs,
       });
 
       // Early return if user has no favorites or platforms
