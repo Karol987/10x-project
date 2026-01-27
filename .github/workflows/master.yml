@@ -1,0 +1,32 @@
+name: TEST & Build Master
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    
+    env:
+      # Environment variables required for build/test
+      # We use secrets for sensitive data
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      SUPABASE_PUBLIC_KEY: ${{ secrets.SUPABASE_PUBLIC_KEY }}
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      
+    steps:
+      - name: Setup Project
+        uses: ./.github/actions/setup-project
+
+      - name: Run Linter
+        run: npm run lint
+
+      - name: Run Tests
+        run: npm run test
+
+      - name: Build
+        run: npm run build
