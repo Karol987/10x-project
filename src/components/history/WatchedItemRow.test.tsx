@@ -622,10 +622,8 @@ describe("WatchedItemRow Component", () => {
     it("should handle delete operation flow - start to finish", async () => {
       const user = userEvent.setup();
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const handleDelete = vi.fn().mockImplementation(async (id: string) => {
         await new Promise((resolve) => setTimeout(resolve, 100));
-        isDeleting = false;
       });
 
       const item = createMockItem({ id: "item-to-delete" });
