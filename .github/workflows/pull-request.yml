@@ -64,6 +64,7 @@ jobs:
       # Integration environment variables from secrets
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_PUBLIC_KEY: ${{ secrets.SUPABASE_PUBLIC_KEY }}
+      SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
       RAPIDAPI_HOST: streaming-availability.p.rapidapi.com
